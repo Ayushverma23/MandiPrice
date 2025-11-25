@@ -1,0 +1,131 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { createListing } from "@/services/marketData";
+import { useAuth } from "@/context/AuthContext";
+import { Upload } from "lucide-react";
+
+export default function SellRequestPage() {
+    const router = useRouter();
+    const { user } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        crop: "",
+        quantity: "",
+        price: "",
+        description: ""
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) return;
+
+        setIsLoading(true);
+        try {
+            await createListing({
+                farmerId: user.id,
+                crop: formData.crop,
+                quantity: Number(formData.quantity),
+                price: Number(formData.price),
+                image: "placeholder.jpg"
+            });
+            router.push("/dashboard/farmer");
+        } catch (error) {
+            console.error("Failed to create listing", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <DashboardLayout>
+            <div className="max-w-2xl mx-auto">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-serif font-bold text-text-ink">New Sell Request</h1>
+                    <p className="text-gray-500">List your produce for Mandi sellers and buyers.</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Crop Name</label>
+                            <select
+                                required
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green bg-white"
+                                value={formData.crop}
+                                onChange={(e) => setFormData({ ...formData, crop: e.target.value })}
+                            >
+                                <option value="">Select Crop</option>
+                                <option value="Maize (Makka)">Maize (Makka)</option>
+                                <option value="Wheat">Wheat</option>
+                                <option value="Rice">Rice</option>
+                                <option value="Potato">Potato</option>
+                                <option value="Litchi">Litchi</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Quintals)</label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
+                                placeholder="e.g. 50"
+                                value={formData.quantity}
+                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Expected Price (per Quintal)</label>
+                        <div className="relative">
+                            <span className="absolute left-4 top-3.5 text-gray-400">₹</span>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
+                                placeholder="e.g. 2200"
+                                value={formData.price}
+                                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">Current Mandi Rate: ₹2150 - ₹2250</p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Photos</label>
+                        <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-earth-green/50 transition-colors cursor-pointer">
+                            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                <Upload className="w-6 h-6" />
+                            </div>
+                            <p className="text-sm text-gray-500">Click to upload photos of your crop</p>
+                            <p className="text-xs text-gray-400 mt-1">JPG, PNG up to 5MB</p>
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex gap-4">
+                        <button
+                            type="button"
+                            onClick={() => router.back()}
+                            className="px-6 py-3 text-gray-600 font-medium hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="flex-1 py-3 bg-earth-green text-white rounded-lg font-medium hover:bg-opacity-90 transition-all disabled:opacity-50"
+                        >
+                            {isLoading ? "Publishing..." : "Publish Listing"}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </DashboardLayout>
+    );
+}

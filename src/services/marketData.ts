@@ -60,6 +60,40 @@ export const searchCrops = async (query: string): Promise<MarketUpdate[]> => {
     );
 };
 
+export interface Listing {
+    id: string;
+    farmerId: string;
+    crop: string;
+    quantity: number; // in Quintals
+    price: number; // Expected price per quintal
+    status: 'active' | 'sold' | 'pending';
+    datePosted: string;
+    image?: string;
+}
+
+const MOCK_LISTINGS: Listing[] = [
+    { id: 'l1', farmerId: 'user_123', crop: 'Maize (Makka)', quantity: 50, price: 2200, status: 'active', datePosted: '2025-11-24' },
+    { id: 'l2', farmerId: 'user_123', crop: 'Wheat', quantity: 100, price: 2400, status: 'pending', datePosted: '2025-11-25' },
+];
+
+export const getMyListings = async (userId: string): Promise<Listing[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    // In a real app, filter by userId. For mock, return all mock listings if they match a pattern or just return all for demo.
+    return MOCK_LISTINGS;
+};
+
+export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' | 'status'>): Promise<Listing> => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    const newListing: Listing = {
+        id: 'l' + Math.random().toString(36).substr(2, 9),
+        ...listing,
+        status: 'active',
+        datePosted: new Date().toISOString().split('T')[0]
+    };
+    MOCK_LISTINGS.unshift(newListing);
+    return newListing;
+};
+
 export const getMandiStats = async (): Promise<MandiStats> => {
     return {
         districtsCovered: 38,
