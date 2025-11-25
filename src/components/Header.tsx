@@ -11,7 +11,7 @@ export default function Header() {
 
             <nav className="hidden md:flex items-center gap-8 font-sans text-sm font-medium text-text-ink/80">
                 <Link href="/" className="hover:text-earth-green transition-colors">Home</Link>
-                <Link href="#" className="hover:text-earth-green transition-colors">Mandis</Link>
+                <Link href="/mandis" className="hover:text-earth-green transition-colors">Mandis</Link>
                 <Link href="#" className="hover:text-earth-green transition-colors">Trends</Link>
                 <Link href="#" className="hover:text-earth-green transition-colors">About</Link>
             </nav>

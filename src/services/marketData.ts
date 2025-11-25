@@ -21,12 +21,32 @@ const MOCK_DATA: MarketUpdate[] = [
     { id: '4', mandiName: 'Samastipur Mandi', district: 'Samastipur', crop: 'Potato', price: 1200, trend: 'up', lastUpdated: '1 hour ago' },
     { id: '5', mandiName: 'Begusarai Mandi', district: 'Begusarai', crop: 'Wheat', price: 2300, trend: 'stable', lastUpdated: '30 mins ago' },
     { id: '6', mandiName: 'Hajipur Mandi', district: 'Vaishali', crop: 'Banana', price: 1800, trend: 'up', lastUpdated: '2 hours ago' },
+    { id: '7', mandiName: 'Gaya Mandi', district: 'Gaya', crop: 'Rice', price: 2800, trend: 'down', lastUpdated: '45 mins ago' },
+    { id: '8', mandiName: 'Bhagalpur Mandi', district: 'Bhagalpur', crop: 'Silk Cocoon', price: 45000, trend: 'up', lastUpdated: '3 hours ago' },
+    { id: '9', mandiName: 'Darbhanga Mandi', district: 'Darbhanga', crop: 'Makhana', price: 12000, trend: 'stable', lastUpdated: '20 mins ago' },
+    { id: '10', mandiName: 'Ara Mandi', district: 'Bhojpur', crop: 'Paddy', price: 2050, trend: 'up', lastUpdated: '1.5 hours ago' },
+    { id: '11', mandiName: 'Chhapra Mandi', district: 'Saran', crop: 'Sugar Cane', price: 340, trend: 'stable', lastUpdated: '4 hours ago' },
+    { id: '12', mandiName: 'Motihari Mandi', district: 'East Champaran', crop: 'Turmeric', price: 6500, trend: 'down', lastUpdated: '5 hours ago' },
+    { id: '13', mandiName: 'Munger Mandi', district: 'Munger', crop: 'Pulses', price: 7800, trend: 'up', lastUpdated: '1 hour ago' },
+    { id: '14', mandiName: 'Kishanganj Mandi', district: 'Kishanganj', crop: 'Tea', price: 15000, trend: 'stable', lastUpdated: '2 hours ago' },
+    { id: '15', mandiName: 'Sasaram Mandi', district: 'Rohtas', crop: 'Rice', price: 2900, trend: 'up', lastUpdated: '30 mins ago' },
 ];
 
 export const getLivePrices = async (): Promise<MarketUpdate[]> => {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));
     return MOCK_DATA;
+};
+
+export const getAllMandis = async (): Promise<MarketUpdate[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return MOCK_DATA;
+};
+
+export const getDistricts = async (): Promise<string[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const districts = new Set(MOCK_DATA.map(item => item.district));
+    return Array.from(districts).sort();
 };
 
 export const searchCrops = async (query: string): Promise<MarketUpdate[]> => {
