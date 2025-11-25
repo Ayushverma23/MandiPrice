@@ -94,6 +94,33 @@ export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' |
     return newListing;
 };
 
+export interface Payment {
+    id: string;
+    listingId: string;
+    amount: number;
+    status: 'pending' | 'credited' | 'processing';
+    date: string;
+    buyerName: string;
+}
+
+const MOCK_PAYMENTS: Payment[] = [
+    { id: 'p1', listingId: 'l1', amount: 110000, status: 'credited', date: '2025-11-20', buyerName: 'Ravi Traders' },
+    { id: 'p2', listingId: 'l3', amount: 45000, status: 'pending', date: '2025-11-24', buyerName: 'Bihar Agro Corp' },
+];
+
+export const getPayments = async (userId: string): Promise<Payment[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    return MOCK_PAYMENTS;
+};
+
+export const updateListingStatus = async (listingId: string, status: Listing['status']): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const listing = MOCK_LISTINGS.find(l => l.id === listingId);
+    if (listing) {
+        listing.status = status;
+    }
+};
+
 export const getMandiStats = async (): Promise<MandiStats> => {
     return {
         districtsCovered: 38,

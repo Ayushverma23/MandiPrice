@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sprout, User as UserIcon, LogOut } from "lucide-react";
+import { Sprout, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 
@@ -42,6 +42,14 @@ export default function Header() {
                                     <p className="text-xs text-gray-500 uppercase">Role</p>
                                     <p className="text-sm font-medium text-earth-green capitalize">{user.role}</p>
                                 </div>
+                                <Link
+                                    href={`/dashboard/${user.role}`}
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                    onClick={() => setShowDropdown(false)}
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Dashboard
+                                </Link>
                                 <button
                                     onClick={logout}
                                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
