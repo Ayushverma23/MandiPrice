@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Twitter, Facebook, X, Linkedin } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -7,18 +8,31 @@ export default function Footer() {
                 {/* Contact Us */}
                 <div>
                     <h3 className="text-lg font-semibold mb-3">Contact Us</h3>
-                    <ul className="space-y-2 text-sm">
+                    <ul className="space-y-2 text-sm flex flex-col space-y-4">
                         <li>
-                            <Link href="mailto:info@khetbazaar.com" className="hover:underline">
-                                info@khetbazaar.com
+                            <Link href="https://twitter.com/YourHandle" className="hover:underline flex items-center gap-2">
+                                <Twitter className="w-5 h-5" />
+                                Twitter
                             </Link>
                         </li>
                         <li>
-                            <Link href="tel:+919999999999" className="hover:underline">
-                                +91 99999 99999
+                            <Link href="https://facebook.com/YourPage" className="hover:underline flex items-center gap-2">
+                                <Facebook className="w-5 h-5" />
+                                Facebook
                             </Link>
                         </li>
-                        <li>123 Farm Road, Patna, Bihar, India</li>
+                        <li>
+                            <Link href="https://x.com/YourHandle" className="hover:underline flex items-center gap-2">
+                                <X className="w-5 h-5" />
+                                X
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://linkedin.com/in/YourProfile" className="hover:underline flex items-center gap-2">
+                                <Linkedin className="w-5 h-5" />
+                                LinkedIn
+                            </Link>
+                        </li>
                     </ul>
                 </div>
                 {/* Help */}
@@ -27,7 +41,7 @@ export default function Footer() {
                     <ul className="space-y-2 text-sm">
                         <li>
                             <Link href="/help" className="hover:underline">
-                                FAQ & Support
+                                FAQ &amp; Support
                             </Link>
                         </li>
                         <li>
