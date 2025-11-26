@@ -20,7 +20,7 @@ export default function Header() {
                 <Link href="/" className="hover:text-earth-green transition-colors">Home</Link>
                 <Link href="/mandis" className="hover:text-earth-green transition-colors">Mandis</Link>
                 <Link href="#" className="hover:text-earth-green transition-colors">Trends</Link>
-                <Link href="#" className="hover:text-earth-green transition-colors">About</Link>
+                <Link href="/about" className="hover:text-earth-green transition-colors">About</Link>
             </nav>
 
             <div className="flex items-center gap-4">
