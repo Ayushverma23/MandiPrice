@@ -2,6 +2,10 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import PriceTicker from "@/components/ui/PriceTicker";
 import MarketCard from "@/components/MarketCard";
+import Features from "@/components/Features";
+import HowItWorks from "@/components/HowItWorks";
+import Testimonials from "@/components/Testimonials";
+import Footer from "@/components/Footer";
 import { getLivePrices } from "@/services/marketData";
 
 export default async function Home() {
@@ -12,6 +16,8 @@ export default async function Home() {
       <PriceTicker />
       <Header />
       <Hero />
+
+      <Features />
 
       {/* Live Market Section */}
       <section id="live-market" className="py-20 px-4 text-center bg-white">
@@ -29,6 +35,10 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      <HowItWorks />
+      <Testimonials />
+      <Footer />
     </main>
   );
 }
