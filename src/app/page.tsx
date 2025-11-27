@@ -6,6 +6,8 @@ import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
+import MSPComparison from "@/components/MSPComparison";
+import GovernmentSchemes from "@/components/GovernmentSchemes";
 import { getLivePrices } from "@/services/marketData";
 
 export default async function Home() {
@@ -17,6 +19,8 @@ export default async function Home() {
       <Header />
       <Hero />
 
+      <MSPComparison />
+      <GovernmentSchemes />
       <Features />
 
       {/* Live Market Section */}
