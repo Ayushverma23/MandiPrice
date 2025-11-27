@@ -84,7 +84,7 @@ export default function FarmerDashboard() {
                     {loading ? (
                         <div className="h-40 bg-gray-100 rounded-xl animate-pulse" />
                     ) : (
-                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                                     <tr>
