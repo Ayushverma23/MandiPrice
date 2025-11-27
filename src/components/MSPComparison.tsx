@@ -58,29 +58,29 @@ export default function MSPComparison() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {mspData.map((item, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100 overflow-hidden group">
+                        <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-earth-green/10 hover:border-earth-green/30 overflow-hidden group">
                             <div className="h-32 overflow-hidden relative">
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
+                                <div className="absolute inset-0 bg-earth-green/20 group-hover:bg-earth-green/10 transition-colors z-10" />
                                 <img
                                     src={item.image}
                                     alt={item.crop}
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                 />
-                                <div className="absolute bottom-2 left-3 z-20 text-white font-bold text-lg shadow-black drop-shadow-md">
+                                <div className="absolute bottom-2 left-3 z-20 text-white font-bold text-lg shadow-black drop-shadow-md font-serif">
                                     {item.crop}
                                 </div>
                             </div>
 
                             <div className="p-4 space-y-3">
                                 <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Govt MSP</span>
-                                    <span className="font-bold text-gray-700">₹{item.msp}</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Govt MSP</span>
+                                    <span className="font-bold text-text-ink">₹{item.msp}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-earth-green uppercase tracking-wider">Market Rate</span>
+                                    <span className="text-xs font-bold text-earth-green uppercase tracking-wider">Market Rate</span>
                                     <span className="font-bold text-earth-green text-lg">₹{item.market}</span>
                                 </div>
-                                <div className="pt-2 text-xs text-right text-gray-400">
+                                <div className="pt-2 text-xs text-right text-soil-brown font-medium">
                                     per {item.unit}
                                 </div>
                             </div>

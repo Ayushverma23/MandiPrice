@@ -36,7 +36,7 @@ export default function Testimonials() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {testimonials.map((item, index) => (
-                        <div key={index} className="bg-paper-cream p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div key={index} className="bg-paper-cream p-8 rounded-2xl border border-earth-green/10 hover:border-accent-gold/50 transition-colors shadow-sm hover:shadow-md">
                             <div className="flex items-center gap-4 mb-6">
                                 <img
                                     src={item.image}
@@ -44,11 +44,11 @@ export default function Testimonials() {
                                     className="w-12 h-12 rounded-full object-cover border-2 border-accent-gold"
                                 />
                                 <div>
-                                    <h4 className="font-bold text-lg">{item.author}</h4>
-                                    <p className="text-sm text-gray-500">{item.role}</p>
+                                    <h4 className="font-bold text-lg text-earth-green">{item.author}</h4>
+                                    <p className="text-sm text-soil-brown font-medium">{item.role}</p>
                                 </div>
                             </div>
-                            <p className="text-gray-700 italic leading-relaxed">
+                            <p className="text-text-ink/80 font-serif italic leading-relaxed text-lg">
                                 "{item.quote}"
                             </p>
                         </div>

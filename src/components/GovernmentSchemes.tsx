@@ -60,17 +60,17 @@ export default function GovernmentSchemes() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {schemes.map((scheme, index) => (
-                        <div key={index} className={`p-6 rounded-xl border ${scheme.color} hover:shadow-md transition-shadow flex flex-col h-full`}>
-                            <h3 className="text-xl font-bold mb-1">{scheme.title}</h3>
-                            <p className="text-xs font-semibold opacity-80 mb-4 uppercase tracking-wide">{scheme.fullTitle}</p>
-                            <p className="text-sm opacity-90 mb-6 flex-grow leading-relaxed">
+                        <div key={index} className="p-6 rounded-xl border border-earth-green/10 bg-paper-cream hover:border-accent-gold/50 hover:shadow-md transition-all flex flex-col h-full group">
+                            <h3 className="text-xl font-serif font-bold mb-1 text-earth-green group-hover:text-soil-brown transition-colors">{scheme.title}</h3>
+                            <p className="text-xs font-bold text-soil-brown/80 mb-4 uppercase tracking-wide">{scheme.fullTitle}</p>
+                            <p className="text-sm text-text-ink/80 mb-6 flex-grow leading-relaxed">
                                 {scheme.description}
                             </p>
                             <a
                                 href={scheme.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center w-full py-2 bg-white/50 hover:bg-white/80 rounded-lg text-sm font-semibold transition-colors border border-current"
+                                className="inline-flex items-center justify-center w-full py-2.5 bg-white border border-earth-green/20 rounded-lg text-sm font-semibold text-earth-green hover:bg-earth-green hover:text-white transition-all"
                             >
                                 Visit Official Portal
                             </a>
