@@ -93,26 +93,6 @@ export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' |
     MOCK_LISTINGS.unshift(newListing);
     return newListing;
 };
-
-export interface Payment {
-    id: string;
-    listingId: string;
-    amount: number;
-    status: 'pending' | 'credited' | 'processing';
-    date: string;
-    buyerName: string;
-}
-
-const MOCK_PAYMENTS: Payment[] = [
-    { id: 'p1', listingId: 'l1', amount: 110000, status: 'credited', date: '2025-11-20', buyerName: 'Ravi Traders' },
-    { id: 'p2', listingId: 'l3', amount: 45000, status: 'pending', date: '2025-11-24', buyerName: 'Bihar Agro Corp' },
-];
-
-export const getPayments = async (userId: string): Promise<Payment[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    return MOCK_PAYMENTS;
-};
-
 export const updateListingStatus = async (listingId: string, status: Listing['status']): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const listing = MOCK_LISTINGS.find(l => l.id === listingId);
@@ -128,3 +108,100 @@ export const getMandiStats = async (): Promise<MandiStats> => {
         activeFarmers: 12000
     }
 }
+export interface Order {
+    id: string;
+    farmerId: string;
+    buyerName: string;
+    crop: string;
+    quantity: number;
+    price: number; // price per quintal
+    totalAmount: number;
+    status: 'pending' | 'accepted' | 'rejected' | 'in_transit' | 'completed' | 'cancelled';
+    deliveryMethod: 'farmer_delivery' | 'buyer_pickup';
+    message?: string; // optional negotiation message
+}
+
+const MOCK_ORDERS: Order[] = [
+    {
+        id: 'o1',
+        farmerId: 'user_123',
+        buyerName: 'Ravi Traders',
+        crop: 'Maize (Makka)',
+        quantity: 30,
+        price: 2150,
+        totalAmount: 64500,
+        status: 'pending',
+        deliveryMethod: 'farmer_delivery',
+    },
+    {
+        id: 'o2',
+        farmerId: 'user_123',
+        buyerName: 'Bihar Agro Corp',
+        crop: 'Wheat',
+        quantity: 50,
+        price: 2400,
+        totalAmount: 120000,
+        status: 'accepted',
+        deliveryMethod: 'buyer_pickup',
+    },
+];
+
+export const getOrders = async (farmerId: string): Promise<Order[]> => {
+    // Simulate async fetch
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return MOCK_ORDERS.filter((o) => o.farmerId === farmerId);
+};
+
+export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const order = MOCK_ORDERS.find((o) => o.id === orderId);
+    if (order) {
+        order.status = status;
+    }
+};
+
+export const submitNegotiation = async (orderId: string, newPrice: number, message: string): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const order = MOCK_ORDERS.find((o) => o.id === orderId);
+    if (order) {
+        order.price = newPrice;
+        order.totalAmount = newPrice * order.quantity;
+        order.message = message;
+        // Optionally set status back to pending for farmer review
+        order.status = 'pending';
+    }
+};
+
+export interface Payment {
+    id: string;
+    listingId: string;
+    amount: number;
+    status: 'pending' | 'credited' | 'processing';
+    date: string;
+    buyerName: string;
+}
+
+const MOCK_PAYMENTS: Payment[] = [
+    {
+        id: 'p1',
+        listingId: 'l1',
+        amount: 110000,
+        status: 'credited',
+        date: '2025-11-20',
+        buyerName: 'Ravi Traders',
+    },
+    {
+        id: 'p2',
+        listingId: 'l2',
+        amount: 45000,
+        status: 'pending',
+        date: '2025-11-24',
+        buyerName: 'Bihar Agro Corp',
+    },
+];
+
+export const getPayments = async (farmerId: string): Promise<Payment[]> => {
+    // Simulate async fetch; in a real app filter by farmerId via listing ownership
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return MOCK_PAYMENTS;
+};

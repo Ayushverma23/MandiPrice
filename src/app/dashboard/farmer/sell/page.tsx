@@ -15,7 +15,10 @@ export default function SellRequestPage() {
         crop: "",
         quantity: "",
         price: "",
-        description: ""
+        description: "",
+        allowDelivery: false,
+        allowPickup: true,
+        isNegotiable: false
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +98,49 @@ export default function SellRequestPage() {
                             />
                         </div>
                         <p className="text-xs text-gray-400 mt-1">Current Mandi Rate: ₹2150 - ₹2250</p>
+                    </div>
+
+                    {/* Logistics & Preferences */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Logistics Preference</label>
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-earth-green focus:ring-earth-green border-gray-300 rounded"
+                                        checked={formData.allowDelivery}
+                                        onChange={(e) => setFormData({ ...formData, allowDelivery: e.target.checked })}
+                                    />
+                                    <span className="text-sm text-gray-700">I can deliver to buyer</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-earth-green focus:ring-earth-green border-gray-300 rounded"
+                                        checked={formData.allowPickup}
+                                        onChange={(e) => setFormData({ ...formData, allowPickup: e.target.checked })}
+                                    />
+                                    <span className="text-sm text-gray-700">Buyer must pick up</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Negotiation</label>
+                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-earth-green focus:ring-earth-green border-gray-300 rounded"
+                                    checked={formData.isNegotiable}
+                                    onChange={(e) => setFormData({ ...formData, isNegotiable: e.target.checked })}
+                                />
+                                <div>
+                                    <span className="block text-sm font-medium text-gray-700">Open to Negotiations</span>
+                                    <span className="block text-xs text-gray-500 mt-0.5">Allow buyers to send counter-offers</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div>
