@@ -4,8 +4,6 @@ import PriceTicker from "@/components/ui/PriceTicker";
 import MarketCard from "@/components/MarketCard";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
-import Testimonials from "@/components/Testimonials";
-import Footer from "@/components/Footer";
 import MSPComparison from "@/components/MSPComparison";
 import GovernmentSchemes from "@/components/GovernmentSchemes";
 import { getLivePrices } from "@/services/marketData";
@@ -41,8 +39,6 @@ export default async function Home() {
       </section>
 
       <HowItWorks />
-      <Testimonials />
-      <Footer />
     </main>
   );
 }

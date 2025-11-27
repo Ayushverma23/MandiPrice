@@ -23,7 +23,7 @@ const testimonials = [
 
 export default function Testimonials() {
     return (
-        <section className="py-20 bg-white text-text-ink">
+        <section className="py-20 bg-paper-cream text-text-ink">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-earth-green">
@@ -36,12 +36,12 @@ export default function Testimonials() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {testimonials.map((item, index) => (
-                        <div key={index} className="bg-paper-cream p-8 rounded-2xl border border-earth-green/10 hover:border-accent-gold/50 transition-colors shadow-sm hover:shadow-md">
+                        <div key={index} className="bg-white p-8 rounded-2xl border border-earth-green/10 hover:border-accent-gold/50 transition-all shadow-sm hover:shadow-md group">
                             <div className="flex items-center gap-4 mb-6">
                                 <img
                                     src={item.image}
                                     alt={item.author}
-                                    className="w-12 h-12 rounded-full object-cover border-2 border-accent-gold"
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-accent-gold group-hover:scale-105 transition-transform"
                                 />
                                 <div>
                                     <h4 className="font-bold text-lg text-earth-green">{item.author}</h4>
