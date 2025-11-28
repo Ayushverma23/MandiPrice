@@ -79,27 +79,78 @@ const MOCK_LISTINGS: Listing[] = [
 ];
 
 export const getMyListings = async (userId: string): Promise<Listing[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    // In a real app, filter by userId. For mock, return all mock listings if they match a pattern or just return all for demo.
-    return MOCK_LISTINGS;
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('farmer_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching listings:', error);
+        return [];
+    }
+
+    return data.map((item: any) => ({
+        id: item.id,
+        farmerId: item.farmer_id,
+        crop: item.crop,
+        quantity: item.quantity,
+        price: item.price_per_quintal,
+        status: item.status,
+        datePosted: new Date(item.created_at).toISOString().split('T')[0],
+        image: item.image_url
+    }));
 };
 
 export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' | 'status'>): Promise<Listing> => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const newListing: Listing = {
-        id: 'l' + Math.random().toString(36).substr(2, 9),
-        ...listing,
-        status: 'active',
-        datePosted: new Date().toISOString().split('T')[0]
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+        .from('listings')
+        .insert({
+            farmer_id: user.id,
+            crop: listing.crop,
+            quantity: listing.quantity,
+            price_per_quintal: listing.price,
+            status: 'active',
+            image_url: listing.image
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating listing:', error);
+        throw error;
+    }
+
+    return {
+        id: data.id,
+        farmerId: data.farmer_id,
+        crop: data.crop,
+        quantity: data.quantity,
+        price: data.price_per_quintal,
+        status: data.status,
+        datePosted: new Date(data.created_at).toISOString().split('T')[0],
+        image: data.image_url
     };
-    MOCK_LISTINGS.unshift(newListing);
-    return newListing;
 };
+
 export const updateListingStatus = async (listingId: string, status: Listing['status']): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const listing = MOCK_LISTINGS.find(l => l.id === listingId);
-    if (listing) {
-        listing.status = status;
+    const supabase = createClient();
+
+    const { error } = await supabase
+        .from('listings')
+        .update({ status })
+        .eq('id', listingId);
+
+    if (error) {
+        console.error('Error updating listing status:', error);
+        throw error;
     }
 };
 
