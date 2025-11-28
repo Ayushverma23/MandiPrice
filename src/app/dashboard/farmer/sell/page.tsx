@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { createListing } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
+import { createClient } from "@/utils/supabase/client";
 import { Upload } from "lucide-react";
 
 export default function SellRequestPage() {
     const router = useRouter();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         crop: "",
         quantity: "",
@@ -21,18 +23,59 @@ export default function SellRequestPage() {
         isNegotiable: false
     });
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        try {
+            const supabase = createClient();
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('listings')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data } = supabase.storage
+                .from('listings')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            return null;
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
 
         setIsLoading(true);
         try {
+            let imageUrl = "placeholder.jpg";
+            if (imageFile) {
+                const uploadedUrl = await uploadImage(imageFile);
+                if (uploadedUrl) {
+                    imageUrl = uploadedUrl;
+                }
+            }
+
             await createListing({
                 farmerId: user.id,
                 crop: formData.crop,
                 quantity: Number(formData.quantity),
                 price: Number(formData.price),
-                image: "placeholder.jpg"
+                image: imageUrl,
+                description: formData.description
             });
             router.push("/dashboard/farmer");
         } catch (error) {
@@ -100,6 +143,17 @@ export default function SellRequestPage() {
                         <p className="text-xs text-gray-400 mt-1">Current Mandi Rate: ₹2150 - ₹2250</p>
                     </div>
 
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
+                            placeholder="Describe your produce (quality, variety, harvest date, etc.)"
+                            rows={3}
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
+                    </div>
+
                     {/* Logistics & Preferences */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -145,11 +199,19 @@ export default function SellRequestPage() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Photos</label>
-                        <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-earth-green/50 transition-colors cursor-pointer">
+                        <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-earth-green/50 transition-colors cursor-pointer relative">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={handleImageChange}
+                            />
                             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
                                 <Upload className="w-6 h-6" />
                             </div>
-                            <p className="text-sm text-gray-500">Click to upload photos of your crop</p>
+                            <p className="text-sm text-gray-500">
+                                {imageFile ? imageFile.name : "Click to upload photos of your crop"}
+                            </p>
                             <p className="text-xs text-gray-400 mt-1">JPG, PNG up to 5MB</p>
                         </div>
                     </div>

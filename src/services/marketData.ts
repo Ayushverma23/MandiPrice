@@ -71,11 +71,12 @@ export interface Listing {
     status: 'active' | 'sold' | 'pending';
     datePosted: string;
     image?: string;
+    description?: string;
 }
 
 const MOCK_LISTINGS: Listing[] = [
-    { id: 'l1', farmerId: 'user_123', crop: 'Maize (Makka)', quantity: 50, price: 2200, status: 'active', datePosted: '2025-11-24' },
-    { id: 'l2', farmerId: 'user_123', crop: 'Wheat', quantity: 100, price: 2400, status: 'pending', datePosted: '2025-11-25' },
+    { id: 'l1', farmerId: 'user_123', crop: 'Maize (Makka)', quantity: 50, price: 2200, status: 'active', datePosted: '2025-11-24', description: 'High quality maize' },
+    { id: 'l2', farmerId: 'user_123', crop: 'Wheat', quantity: 100, price: 2400, status: 'pending', datePosted: '2025-11-25', description: 'Fresh wheat harvest' },
 ];
 
 export const getMyListings = async (userId: string): Promise<Listing[]> => {
@@ -100,7 +101,8 @@ export const getMyListings = async (userId: string): Promise<Listing[]> => {
         price: item.price_per_quintal,
         status: item.status,
         datePosted: new Date(item.created_at).toISOString().split('T')[0],
-        image: item.image_url
+        image: item.image_url,
+        description: item.description
     }));
 };
 
@@ -118,7 +120,8 @@ export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' |
             quantity: listing.quantity,
             price_per_quintal: listing.price,
             status: 'active',
-            image_url: listing.image
+            image_url: listing.image,
+            description: listing.description
         })
         .select()
         .single();
@@ -136,7 +139,8 @@ export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' |
         price: data.price_per_quintal,
         status: data.status,
         datePosted: new Date(data.created_at).toISOString().split('T')[0],
-        image: data.image_url
+        image: data.image_url,
+        description: data.description
     };
 };
 
