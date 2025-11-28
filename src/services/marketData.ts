@@ -1,3 +1,5 @@
+import { createClient } from "@/utils/supabase/client";
+
 export interface MarketUpdate {
     id: string;
     mandiName: string;
@@ -108,6 +110,7 @@ export const getMandiStats = async (): Promise<MandiStats> => {
         activeFarmers: 12000
     }
 }
+
 export interface Order {
     id: string;
     farmerId: string;
@@ -119,57 +122,100 @@ export interface Order {
     status: 'pending' | 'accepted' | 'rejected' | 'in_transit' | 'completed' | 'cancelled';
     deliveryMethod: 'farmer_delivery' | 'buyer_pickup';
     message?: string; // optional negotiation message
+    created_at: string;
 }
 
-const MOCK_ORDERS: Order[] = [
-    {
-        id: 'o1',
-        farmerId: 'user_123',
-        buyerName: 'Ravi Traders',
-        crop: 'Maize (Makka)',
-        quantity: 30,
-        price: 2150,
-        totalAmount: 64500,
-        status: 'pending',
-        deliveryMethod: 'farmer_delivery',
-    },
-    {
-        id: 'o2',
-        farmerId: 'user_123',
-        buyerName: 'Bihar Agro Corp',
-        crop: 'Wheat',
-        quantity: 50,
-        price: 2400,
-        totalAmount: 120000,
-        status: 'accepted',
-        deliveryMethod: 'buyer_pickup',
-    },
-];
-
 export const getOrders = async (farmerId: string): Promise<Order[]> => {
-    // Simulate async fetch
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return MOCK_ORDERS.filter((o) => o.farmerId === farmerId);
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            listings (
+                crop
+            ),
+            profiles:buyer_id (
+                full_name
+            )
+        `)
+        .eq('seller_id', farmerId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching orders:', error);
+        return [];
+    }
+
+    return data.map((order: any) => ({
+        id: order.id,
+        farmerId: order.seller_id,
+        buyerName: order.profiles?.full_name || 'Unknown Buyer',
+        crop: order.listings?.crop || 'Unknown Crop',
+        quantity: order.quantity,
+        price: order.price_per_quintal,
+        totalAmount: order.total_amount,
+        status: order.status,
+        deliveryMethod: order.delivery_method,
+        created_at: order.created_at
+    }));
 };
 
 export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const order = MOCK_ORDERS.find((o) => o.id === orderId);
-    if (order) {
-        order.status = status;
+    const supabase = createClient();
+
+    const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', orderId);
+
+    if (error) {
+        console.error('Error updating order status:', error);
+        throw error;
     }
 };
 
 export const submitNegotiation = async (orderId: string, newPrice: number, message: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const order = MOCK_ORDERS.find((o) => o.id === orderId);
-    if (order) {
-        order.price = newPrice;
-        order.totalAmount = newPrice * order.quantity;
-        order.message = message;
-        // Optionally set status back to pending for farmer review
-        order.status = 'pending';
+    const supabase = createClient();
+
+    // 1. Get current order details to calculate total amount
+    const { data: order, error: fetchError } = await supabase
+        .from('orders')
+        .select('quantity, buyer_id, seller_id')
+        .eq('id', orderId)
+        .single();
+
+    if (fetchError || !order) {
+        throw new Error('Order not found');
     }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // 2. Create negotiation record
+    const { error: negotiationError } = await supabase
+        .from('negotiations')
+        .insert({
+            order_id: orderId,
+            sender_id: user.id,
+            offered_price: newPrice,
+            message: message,
+            status: 'pending'
+        });
+
+    if (negotiationError) throw negotiationError;
+
+    // 3. Update order with new price and status
+    const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+            price_per_quintal: newPrice,
+            total_amount: newPrice * order.quantity,
+            status: 'pending' // Reset status to pending for the other party to review
+        })
+        .eq('id', orderId);
+
+    if (updateError) throw updateError;
 };
 
 export interface Payment {

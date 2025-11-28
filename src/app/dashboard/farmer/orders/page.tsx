@@ -1,35 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getOrders, Order, updateOrderStatus, submitNegotiation } from "@/services/marketData";
-import { Check, X, MessageCircle, Truck, Package } from "lucide-react";
+import { Check, X, MessageCircle, Truck, Package, Loader2 } from "lucide-react";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
 export default function OrdersPage() {
     const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'incoming' | 'active' | 'history'>('incoming');
     const [negotiatingOrder, setNegotiatingOrder] = useState<Order | null>(null);
 
-    useEffect(() => {
+    const fetchOrders = useCallback(async () => {
         if (user) {
-            getOrders(user.id).then(setOrders);
+            setLoading(true);
+            try {
+                const data = await getOrders(user.id);
+                setOrders(data);
+            } catch (error) {
+                console.error("Failed to fetch orders", error);
+            } finally {
+                setLoading(false);
+            }
         }
     }, [user]);
 
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
+
     const handleStatusUpdate = async (orderId: string, status: Order['status']) => {
-        await updateOrderStatus(orderId, status);
-        // Optimistic update
-        setOrders(orders.map(o => o.id === orderId ? { ...o, status } : o));
+        try {
+            await updateOrderStatus(orderId, status);
+            // Refresh orders to get latest state
+            fetchOrders();
+        } catch (error) {
+            console.error("Failed to update status", error);
+            alert("Failed to update status");
+        }
     };
 
     const handleNegotiationSubmit = async (price: number, message: string) => {
         if (negotiatingOrder) {
-            await submitNegotiation(negotiatingOrder.id, price, message);
-            setNegotiatingOrder(null);
-            alert("Counter offer sent!");
+            try {
+                await submitNegotiation(negotiatingOrder.id, price, message);
+                setNegotiatingOrder(null);
+                alert("Counter offer sent!");
+                fetchOrders();
+            } catch (error) {
+                console.error("Failed to submit negotiation", error);
+                alert("Failed to submit negotiation");
+            }
         }
     };
 
@@ -73,7 +97,11 @@ export default function OrdersPage() {
 
             {/* Orders List */}
             <div className="space-y-4">
-                {filteredOrders.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-earth-green" />
+                    </div>
+                ) : filteredOrders.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
                         <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-500">No orders found in this category.</p>
@@ -86,8 +114,8 @@ export default function OrdersPage() {
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="font-bold text-lg text-text-ink">{order.buyerName}</h3>
                                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                order.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                                                    'bg-gray-100 text-gray-800'
+                                            order.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                                'bg-gray-100 text-gray-800'
                                             }`}>
                                             {order.status}
                                         </span>
