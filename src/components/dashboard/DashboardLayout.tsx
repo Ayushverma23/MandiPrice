@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp } from "lucide-react";
+import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp, Store, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -51,89 +51,145 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                    <Link
-                        href="/dashboard/farmer"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <LayoutDashboard className="w-5 h-5" />
-                        Overview
-                    </Link>
+                    {user?.role === 'farmer' && (
+                        <>
+                            <Link
+                                href="/dashboard/farmer"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                                Overview
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/sell"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/sell')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <PlusCircle className="w-5 h-5" />
-                        Sell Request
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/sell"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/sell')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <PlusCircle className="w-5 h-5" />
+                                Sell Request
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/listings"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/listings')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <List className="w-5 h-5" />
-                        My Listings
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/listings"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/listings')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <List className="w-5 h-5" />
+                                My Listings
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/orders"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/orders')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <div className="w-5 h-5 flex items-center justify-center font-bold text-xs border border-current rounded">📦</div>
-                        Orders
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/orders"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/orders')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="w-5 h-5 flex items-center justify-center font-bold text-xs border border-current rounded">📦</div>
+                                Orders
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/payments"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/payments')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <div className="w-5 h-5 flex items-center justify-center font-bold text-xs border border-current rounded">₹</div>
-                        Payments
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/payments"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/payments')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="w-5 h-5 flex items-center justify-center font-bold text-xs border border-current rounded">₹</div>
+                                Payments
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/profile"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/profile')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <Settings className="w-5 h-5" />
-                        Profile & Settings
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/profile"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/profile')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Settings className="w-5 h-5" />
+                                Profile & Settings
+                            </Link>
 
-                    <Link
-                        href="/dashboard/farmer/help"
-                        onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/help')
-                            ? 'bg-earth-green/10 text-earth-green'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <CircleHelp className="w-5 h-5" />
-                        Help & Support
-                    </Link>
+                            <Link
+                                href="/dashboard/farmer/help"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/help')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <CircleHelp className="w-5 h-5" />
+                                Help & Support
+                            </Link>
+                        </>
+                    )}
+
+                    {user?.role === 'buyer' && (
+                        <>
+                            <Link
+                                href="/dashboard/buyer"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                                Overview
+                            </Link>
+
+                            <Link
+                                href="/dashboard/buyer/market"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/market')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Store className="w-5 h-5" />
+                                Marketplace
+                            </Link>
+
+                            <Link
+                                href="/dashboard/buyer/orders"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/orders')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                My Orders
+                            </Link>
+
+                            <Link
+                                href="/dashboard/buyer/profile"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/profile')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Settings className="w-5 h-5" />
+                                Profile & Settings
+                            </Link>
+                        </>
+                    )}
                 </nav>
 
                 <div className="p-4 border-t border-gray-100">

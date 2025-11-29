@@ -1,5 +1,7 @@
 "use client";
 
+
+
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -16,11 +18,9 @@ export default function Hero() {
     const handleSearch = () => {
         if (searchQuery.trim()) {
             console.log("Searching for:", searchQuery);
-            // In a real app, this would navigate to a search results page
-            // router.push(`/search?q=${searchQuery}`);
-            const resultsSection = document.getElementById('live-market');
+            const resultsSection = document.getElementById("live-market");
             if (resultsSection) {
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
+                resultsSection.scrollIntoView({ behavior: "smooth" });
             }
         }
     };
@@ -55,6 +55,7 @@ export default function Hero() {
 
                 {/* Search Bar */}
                 <motion.div
+                    suppressHydrationWarning
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
@@ -69,33 +70,39 @@ export default function Hero() {
                         className="flex-1 px-4 py-3 bg-transparent outline-none text-text-ink placeholder:text-gray-400 font-sans"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                        suppressHydrationWarning
                     />
                     <button
                         onClick={handleSearch}
                         className="px-6 py-3 bg-earth-green text-white rounded-full font-medium hover:bg-opacity-90 transition-all"
+                        suppressHydrationWarning
                     >
                         Search
                     </button>
                 </motion.div>
-
-                <div className="pt-12 flex items-center justify-center gap-8 text-sm text-gray-500 font-sans">
-                    <div className="flex flex-col items-center">
-                        <span className="font-bold text-2xl text-soil-brown">{stats?.districtsCovered || 38}</span>
-                        <span>Districts Covered</span>
-                    </div>
-                    <div className="w-px h-10 bg-gray-300" />
-                    <div className="flex flex-col items-center">
-                        <span className="font-bold text-2xl text-soil-brown">{stats?.totalMandis || "150+"}</span>
-                        <span>Mandis Live</span>
-                    </div>
-                    <div className="w-px h-10 bg-gray-300" />
-                    <div className="flex flex-col items-center">
-                        <span className="font-bold text-2xl text-soil-brown">Daily</span>
-                        <span>Updates</span>
-                    </div>
-                </div>
             </motion.div>
+
+            <div className="pt-12 flex items-center justify-center gap-8 text-sm text-gray-500 font-sans">
+                <div className="flex flex-col items-center">
+                    <span className="font-bold text-2xl text-soil-brown">
+                        {stats?.districtsCovered || 38}
+                    </span>
+                    <span>Districts Covered</span>
+                </div>
+                <div className="w-px h-10 bg-gray-300" />
+                <div className="flex flex-col items-center">
+                    <span className="font-bold text-2xl text-soil-brown">
+                        {stats?.totalMandis || "150+"}
+                    </span>
+                    <span>Mandis Live</span>
+                </div>
+                <div className="w-px h-10 bg-gray-300" />
+                <div className="flex flex-col items-center">
+                    <span className="font-bold text-2xl text-soil-brown">Daily</span>
+                    <span>Updates</span>
+                </div>
+            </div>
         </section>
     );
 }
