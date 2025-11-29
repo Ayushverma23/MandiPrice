@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, HelpCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -121,6 +121,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     >
                         <Settings className="w-5 h-5" />
                         Profile & Settings
+                    </Link>
+
+                    <Link
+                        href="/dashboard/farmer/help"
+                        onClick={closeMobileMenu}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/farmer/help')
+                            ? 'bg-earth-green/10 text-earth-green'
+                            : 'text-gray-600 hover:bg-gray-50'
+                            }`}
+                    >
+                        <HelpCircle className="w-5 h-5" />
+                        Help & Support
                     </Link>
                 </nav>
 
