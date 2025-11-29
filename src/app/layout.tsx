@@ -10,6 +10,9 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 export const metadata: Metadata = {
   title: "Khet-Bazaar | Bihar's Digital Mandi",
   description: "Connecting farmers directly to markets.",
+  icons: {
+    icon: '/leaf-logo.png',
+  },
 };
 
 export default function RootLayout({
