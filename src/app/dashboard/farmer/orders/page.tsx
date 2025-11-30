@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getOrders, Order, updateOrderStatus, submitNegotiation } from "@/services/marketData";
+import { getOrders, Order, updateOrderStatus, submitNegotiation, getNegotiations, Negotiation } from "@/services/marketData";
 import { Check, X, MessageCircle, Truck, Package, Loader2 } from "lucide-react";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
@@ -13,6 +13,7 @@ export default function OrdersPage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'incoming' | 'active' | 'history'>('incoming');
     const [negotiatingOrder, setNegotiatingOrder] = useState<Order | null>(null);
+    const [negotiationHistory, setNegotiationHistory] = useState<Negotiation[]>([]);
 
     const fetchOrders = useCallback(async () => {
         if (user) {
@@ -40,6 +41,21 @@ export default function OrdersPage() {
         } catch (error) {
             console.error("Failed to update status", error);
             alert("Failed to update status");
+        }
+    };
+
+    const handleNegotiateClick = async (order: Order) => {
+        setNegotiatingOrder(order);
+        try {
+            const history = await getNegotiations(order.id);
+            // Mark current user's messages as 'Me'
+            const formattedHistory = history.map(h => ({
+                ...h,
+                senderName: h.senderId === user?.id ? 'Me' : h.senderName
+            }));
+            setNegotiationHistory(formattedHistory);
+        } catch (error) {
+            console.error("Failed to fetch negotiation history", error);
         }
     };
 
@@ -153,7 +169,7 @@ export default function OrdersPage() {
                                             <Check className="w-4 h-4" /> Accept
                                         </button>
                                         <button
-                                            onClick={() => setNegotiatingOrder(order)}
+                                            onClick={() => handleNegotiateClick(order)}
                                             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-earth-green text-earth-green rounded-lg hover:bg-earth-green/5 transition-colors text-sm font-medium"
                                         >
                                             <MessageCircle className="w-4 h-4" /> Negotiate
@@ -180,6 +196,7 @@ export default function OrdersPage() {
                     currentPrice={negotiatingOrder.price}
                     orderId={negotiatingOrder.id}
                     onSubmitOffer={handleNegotiationSubmit}
+                    history={negotiationHistory}
                 />
             )}
         </DashboardLayout>

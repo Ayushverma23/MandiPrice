@@ -431,6 +431,54 @@ export const initiateNegotiation = async (listingId: string, quantity: number, o
     if (negotiationError) throw negotiationError;
 };
 
+export interface Negotiation {
+    id: string;
+    orderId: string;
+    senderId: string;
+    senderName: string;
+    offeredPrice: number;
+    message: string;
+    status: string;
+    createdAt: string;
+}
+
+export const getNegotiations = async (orderId: string): Promise<Negotiation[]> => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('negotiations')
+        .select('*')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching negotiations:', JSON.stringify(error, null, 2));
+        return [];
+    }
+
+    if (!data || data.length === 0) return [];
+
+    // Fetch sender names
+    const senderIds = Array.from(new Set(data.map((n: any) => n.sender_id)));
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', senderIds);
+
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return data.map((item: any) => ({
+        id: item.id,
+        orderId: item.order_id,
+        senderId: item.sender_id,
+        senderName: profilesMap.get(item.sender_id)?.full_name || 'Unknown User',
+        offeredPrice: item.offered_price,
+        message: item.message,
+        status: item.status,
+        createdAt: item.created_at
+    }));
+};
+
 export interface Payment {
     id: string;
     listingId: string;

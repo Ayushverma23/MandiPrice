@@ -2,29 +2,61 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Package, Clock, CheckCircle, Truck, XCircle } from "lucide-react";
-import { getBuyerOrders, Order } from "@/services/marketData";
+import { Package, Clock, CheckCircle, Truck, XCircle, MessageCircle } from "lucide-react";
+import { getBuyerOrders, Order, initiateNegotiation, submitNegotiation, getNegotiations, Negotiation } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
+import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
 export default function BuyerOrdersPage() {
     const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [negotiatingOrder, setNegotiatingOrder] = useState<Order | null>(null);
+    const [negotiationHistory, setNegotiationHistory] = useState<Negotiation[]>([]);
+
+    const fetchOrders = async () => {
+        if (!user) return;
+        try {
+            const data = await getBuyerOrders(user.id);
+            setOrders(data);
+        } catch (error) {
+            console.error("Failed to fetch orders", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            if (!user) return;
-            try {
-                const data = await getBuyerOrders(user.id);
-                setOrders(data);
-            } catch (error) {
-                console.error("Failed to fetch orders", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchOrders();
     }, [user]);
+
+    const handleNegotiateClick = async (order: Order) => {
+        setNegotiatingOrder(order);
+        try {
+            const history = await getNegotiations(order.id);
+            // Mark current user's messages as 'Me'
+            const formattedHistory = history.map(h => ({
+                ...h,
+                senderName: h.senderId === user?.id ? 'Me' : h.senderName
+            }));
+            setNegotiationHistory(formattedHistory);
+        } catch (error) {
+            console.error("Failed to fetch negotiation history", error);
+        }
+    };
+
+    const handleNegotiationSubmit = async (price: number, message: string) => {
+        if (!negotiatingOrder) return;
+        try {
+            await submitNegotiation(negotiatingOrder.id, price, message);
+            setNegotiatingOrder(null);
+            alert("Counter offer sent!");
+            fetchOrders(); // Refresh to see updated price/status
+        } catch (error) {
+            console.error("Failed to submit negotiation", error);
+            alert("Failed to submit offer. Please try again.");
+        }
+    };
 
     const getStatusConfig = (status: Order['status']) => {
         switch (status) {
@@ -91,9 +123,18 @@ export default function BuyerOrdersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button className="text-earth-green hover:text-earth-green/80 font-medium text-xs">
-                                                    View Details
-                                                </button>
+                                                {order.status === 'pending' ? (
+                                                    <button
+                                                        onClick={() => handleNegotiateClick(order)}
+                                                        className="flex items-center gap-1 text-earth-green hover:text-earth-green/80 font-medium text-xs border border-earth-green/20 px-2 py-1 rounded hover:bg-earth-green/5"
+                                                    >
+                                                        <MessageCircle className="w-3 h-3" /> Negotiate
+                                                    </button>
+                                                ) : (
+                                                    <button className="text-gray-400 font-medium text-xs cursor-not-allowed">
+                                                        View Details
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -103,6 +144,17 @@ export default function BuyerOrdersPage() {
                     </table>
                 </div>
             </div>
+
+            {negotiatingOrder && (
+                <NegotiationModal
+                    isOpen={!!negotiatingOrder}
+                    onClose={() => setNegotiatingOrder(null)}
+                    currentPrice={negotiatingOrder.price}
+                    orderId={negotiatingOrder.id}
+                    onSubmitOffer={handleNegotiationSubmit}
+                    history={negotiationHistory}
+                />
+            )}
         </DashboardLayout>
     );
 }
