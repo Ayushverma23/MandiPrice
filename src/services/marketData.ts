@@ -109,37 +109,51 @@ export const getMyListings = async (userId: string): Promise<Listing[]> => {
 export const getAllListings = async (): Promise<(Listing & { farmerName: string, district: string, category: string })[]> => {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    // 1. Fetch Listings
+    const { data: listings, error: listingsError } = await supabase
         .from('listings')
-        .select(`
-            *,
-            profiles:farmer_id (
-                full_name,
-                district
-            )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching all listings:', error);
+    if (listingsError) {
+        console.error('Error fetching all listings:', JSON.stringify(listingsError, null, 2));
         return [];
     }
 
-    return data.map((item: any) => ({
-        id: item.id,
-        farmerId: item.farmer_id,
-        crop: item.crop,
-        quantity: item.quantity,
-        price: item.price_per_quintal,
-        status: item.status,
-        datePosted: new Date(item.created_at).toISOString().split('T')[0],
-        image: item.image_url,
-        description: item.description,
-        farmerName: item.profiles?.full_name || 'Unknown Farmer',
-        district: item.profiles?.district || 'Unknown District',
-        category: 'Vegetables' // Default for now, or derive from crop
-    }));
+    if (!listings || listings.length === 0) return [];
+
+    // 2. Fetch Profiles
+    const farmerIds = Array.from(new Set(listings.map((l: any) => l.farmer_id)));
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, district')
+        .in('id', farmerIds);
+
+    if (profilesError) {
+        console.error('Error fetching profiles:', JSON.stringify(profilesError, null, 2));
+        // Fallback to unknown if profiles fail
+    }
+
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return listings.map((item: any) => {
+        const profile = profilesMap.get(item.farmer_id);
+        return {
+            id: item.id,
+            farmerId: item.farmer_id,
+            crop: item.crop,
+            quantity: item.quantity,
+            price: item.price_per_quintal,
+            status: item.status,
+            datePosted: new Date(item.created_at).toISOString().split('T')[0],
+            image: item.image_url,
+            description: item.description,
+            farmerName: profile?.full_name || 'Unknown Farmer',
+            district: profile?.district || 'Unknown District',
+            category: 'Vegetables' // Default
+        };
+    });
 };
 
 export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' | 'status'>): Promise<Listing> => {
@@ -220,30 +234,42 @@ export interface Order {
 export const getOrders = async (farmerId: string): Promise<Order[]> => {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    // 1. Fetch Orders
+    const { data: orders, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-            *,
-            listings (
-                crop
-            ),
-            profiles:buyer_id (
-                full_name
-            )
-        `)
+        .select('*')
         .eq('seller_id', farmerId)
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching orders:', error);
+    if (ordersError) {
+        console.error('Error fetching orders:', JSON.stringify(ordersError, null, 2));
         return [];
     }
 
-    return data.map((order: any) => ({
+    if (!orders || orders.length === 0) return [];
+
+    // 2. Fetch Listings and Profiles
+    const listingIds = Array.from(new Set(orders.map((o: any) => o.listing_id)));
+    const buyerIds = Array.from(new Set(orders.map((o: any) => o.buyer_id)));
+
+    const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('id, crop')
+        .in('id', listingIds);
+
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', buyerIds);
+
+    const listingsMap = new Map(listings?.map((l: any) => [l.id, l]) || []);
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return orders.map((order: any) => ({
         id: order.id,
         farmerId: order.seller_id,
-        buyerName: order.profiles?.full_name || 'Unknown Buyer',
-        crop: order.listings?.crop || 'Unknown Crop',
+        buyerName: profilesMap.get(order.buyer_id)?.full_name || 'Unknown Buyer',
+        crop: listingsMap.get(order.listing_id)?.crop || 'Unknown Crop',
         quantity: order.quantity,
         price: order.price_per_quintal,
         totalAmount: order.total_amount,
@@ -256,31 +282,43 @@ export const getOrders = async (farmerId: string): Promise<Order[]> => {
 export const getBuyerOrders = async (buyerId: string): Promise<Order[]> => {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    // 1. Fetch Orders
+    const { data: orders, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-            *,
-            listings (
-                crop
-            ),
-            profiles:seller_id (
-                full_name
-            )
-        `)
+        .select('*')
         .eq('buyer_id', buyerId)
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching buyer orders:', error);
+    if (ordersError) {
+        console.error('Error fetching buyer orders:', JSON.stringify(ordersError, null, 2));
         return [];
     }
 
-    return data.map((order: any) => ({
+    if (!orders || orders.length === 0) return [];
+
+    // 2. Fetch Listings and Profiles
+    const listingIds = Array.from(new Set(orders.map((o: any) => o.listing_id)));
+    const sellerIds = Array.from(new Set(orders.map((o: any) => o.seller_id)));
+
+    const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('id, crop')
+        .in('id', listingIds);
+
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', sellerIds);
+
+    const listingsMap = new Map(listings?.map((l: any) => [l.id, l]) || []);
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return orders.map((order: any) => ({
         id: order.id,
         farmerId: order.seller_id,
         buyerName: 'Me',
-        farmerName: order.profiles?.full_name || 'Unknown Farmer',
-        crop: order.listings?.crop || 'Unknown Crop',
+        farmerName: profilesMap.get(order.seller_id)?.full_name || 'Unknown Farmer',
+        crop: listingsMap.get(order.listing_id)?.crop || 'Unknown Crop',
         quantity: order.quantity,
         price: order.price_per_quintal,
         totalAmount: order.total_amount,
