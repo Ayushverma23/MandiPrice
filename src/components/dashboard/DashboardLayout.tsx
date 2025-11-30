@@ -37,20 +37,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out md:translate-x-0 md:static md:flex flex-col
+                fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200
+                transform transition-transform ease-in-out duration-300
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                md:translate-x-0
+                flex flex-col
             `}>
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                    <div>
-                        <h2 className="font-serif font-bold text-xl text-earth-green">Khet-Bazaar</h2>
-                        <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{user?.role} Dashboard</p>
-                    </div>
-                    <button onClick={closeMobileMenu} className="md:hidden p-1 hover:bg-gray-100 rounded text-gray-500">
-                        <X className="w-5 h-5" />
-                    </button>
+                <div className="p-4 border-b border-gray-100 md:block hidden">
+                    <h2 className="font-serif font-bold text-2xl text-earth-green">Khet-Bazaar</h2>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     {user?.role === 'farmer' && (
                         <>
                             <Link
@@ -204,7 +201,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+            <main className="flex-1 p-4 md:p-8 overflow-x-hidden md:ml-64">
                 {children}
             </main>
         </div>
