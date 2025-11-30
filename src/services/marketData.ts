@@ -106,6 +106,42 @@ export const getMyListings = async (userId: string): Promise<Listing[]> => {
     }));
 };
 
+export const getAllListings = async (): Promise<(Listing & { farmerName: string, district: string, category: string })[]> => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('listings')
+        .select(`
+            *,
+            profiles:farmer_id (
+                full_name,
+                district
+            )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching all listings:', error);
+        return [];
+    }
+
+    return data.map((item: any) => ({
+        id: item.id,
+        farmerId: item.farmer_id,
+        crop: item.crop,
+        quantity: item.quantity,
+        price: item.price_per_quintal,
+        status: item.status,
+        datePosted: new Date(item.created_at).toISOString().split('T')[0],
+        image: item.image_url,
+        description: item.description,
+        farmerName: item.profiles?.full_name || 'Unknown Farmer',
+        district: item.profiles?.district || 'Unknown District',
+        category: 'Vegetables' // Default for now, or derive from crop
+    }));
+};
+
 export const createListing = async (listing: Omit<Listing, 'id' | 'datePosted' | 'status'>): Promise<Listing> => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -170,6 +206,7 @@ export interface Order {
     id: string;
     farmerId: string;
     buyerName: string;
+    farmerName?: string; // Added for buyer view
     crop: string;
     quantity: number;
     price: number; // price per quintal
@@ -206,6 +243,43 @@ export const getOrders = async (farmerId: string): Promise<Order[]> => {
         id: order.id,
         farmerId: order.seller_id,
         buyerName: order.profiles?.full_name || 'Unknown Buyer',
+        crop: order.listings?.crop || 'Unknown Crop',
+        quantity: order.quantity,
+        price: order.price_per_quintal,
+        totalAmount: order.total_amount,
+        status: order.status,
+        deliveryMethod: order.delivery_method,
+        created_at: order.created_at
+    }));
+};
+
+export const getBuyerOrders = async (buyerId: string): Promise<Order[]> => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            listings (
+                crop
+            ),
+            profiles:seller_id (
+                full_name
+            )
+        `)
+        .eq('buyer_id', buyerId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching buyer orders:', error);
+        return [];
+    }
+
+    return data.map((order: any) => ({
+        id: order.id,
+        farmerId: order.seller_id,
+        buyerName: 'Me',
+        farmerName: order.profiles?.full_name || 'Unknown Farmer',
         crop: order.listings?.crop || 'Unknown Crop',
         quantity: order.quantity,
         price: order.price_per_quintal,
@@ -271,6 +345,52 @@ export const submitNegotiation = async (orderId: string, newPrice: number, messa
         .eq('id', orderId);
 
     if (updateError) throw updateError;
+};
+
+export const initiateNegotiation = async (listingId: string, quantity: number, offerPrice: number, message: string): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // 1. Get listing details
+    const { data: listing, error: listingError } = await supabase
+        .from('listings')
+        .select('farmer_id')
+        .eq('id', listingId)
+        .single();
+
+    if (listingError || !listing) throw new Error('Listing not found');
+
+    // 2. Create Order
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+            buyer_id: user.id,
+            seller_id: listing.farmer_id,
+            listing_id: listingId,
+            quantity: quantity,
+            price_per_quintal: offerPrice,
+            total_amount: offerPrice * quantity,
+            status: 'pending',
+            delivery_method: 'buyer_pickup' // Default
+        })
+        .select()
+        .single();
+
+    if (orderError) throw orderError;
+
+    // 3. Create Negotiation
+    const { error: negotiationError } = await supabase
+        .from('negotiations')
+        .insert({
+            order_id: order.id,
+            sender_id: user.id,
+            offered_price: offerPrice,
+            message: message,
+            status: 'pending'
+        });
+
+    if (negotiationError) throw negotiationError;
 };
 
 export interface Payment {

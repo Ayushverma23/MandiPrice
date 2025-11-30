@@ -1,43 +1,49 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Package, Clock, CheckCircle, Truck } from "lucide-react";
-
-// Mock Data for Orders
-const MOCK_ORDERS = [
-    {
-        id: "ORD-2024-001",
-        date: "2024-11-28",
-        items: "Fresh Red Onions (500 kg)",
-        farmer: "Ram Kumar",
-        amount: "₹6,000",
-        status: "In Transit",
-        statusColor: "text-blue-600 bg-blue-50 border-blue-100",
-        icon: <Truck className="w-4 h-4" />
-    },
-    {
-        id: "ORD-2024-002",
-        date: "2024-11-25",
-        items: "Potatoes (200 kg)",
-        farmer: "Amit Verma",
-        amount: "₹1,600",
-        status: "Delivered",
-        statusColor: "text-green-600 bg-green-50 border-green-100",
-        icon: <CheckCircle className="w-4 h-4" />
-    },
-    {
-        id: "ORD-2024-003",
-        date: "2024-11-29",
-        items: "Basmati Rice (1000 kg)",
-        farmer: "Kisan Agro",
-        amount: "₹45,000",
-        status: "Pending Confirmation",
-        statusColor: "text-orange-600 bg-orange-50 border-orange-100",
-        icon: <Clock className="w-4 h-4" />
-    }
-];
+import { Package, Clock, CheckCircle, Truck, XCircle } from "lucide-react";
+import { getBuyerOrders, Order } from "@/services/marketData";
+import { useAuth } from "@/context/AuthContext";
 
 export default function BuyerOrdersPage() {
+    const { user } = useAuth();
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            if (!user) return;
+            try {
+                const data = await getBuyerOrders(user.id);
+                setOrders(data);
+            } catch (error) {
+                console.error("Failed to fetch orders", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchOrders();
+    }, [user]);
+
+    const getStatusConfig = (status: Order['status']) => {
+        switch (status) {
+            case 'completed':
+                return { color: "text-green-600 bg-green-50 border-green-100", icon: <CheckCircle className="w-4 h-4" />, label: "Delivered" };
+            case 'in_transit':
+                return { color: "text-blue-600 bg-blue-50 border-blue-100", icon: <Truck className="w-4 h-4" />, label: "In Transit" };
+            case 'pending':
+                return { color: "text-orange-600 bg-orange-50 border-orange-100", icon: <Clock className="w-4 h-4" />, label: "Pending" };
+            case 'accepted':
+                return { color: "text-purple-600 bg-purple-50 border-purple-100", icon: <CheckCircle className="w-4 h-4" />, label: "Accepted" };
+            case 'cancelled':
+            case 'rejected':
+                return { color: "text-red-600 bg-red-50 border-red-100", icon: <XCircle className="w-4 h-4" />, label: "Cancelled" };
+            default:
+                return { color: "text-gray-600 bg-gray-50 border-gray-100", icon: <Package className="w-4 h-4" />, label: status };
+        }
+    };
+
     return (
         <DashboardLayout>
             <div className="mb-8">
@@ -60,26 +66,39 @@ export default function BuyerOrdersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {MOCK_ORDERS.map((order) => (
-                                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-text-ink">{order.id}</td>
-                                    <td className="px-6 py-4 text-gray-600">{order.date}</td>
-                                    <td className="px-6 py-4 text-gray-600">{order.items}</td>
-                                    <td className="px-6 py-4 text-gray-600">{order.farmer}</td>
-                                    <td className="px-6 py-4 font-medium text-text-ink">{order.amount}</td>
-                                    <td className="px-6 py-4">
-                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${order.statusColor}`}>
-                                            {order.icon}
-                                            {order.status}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <button className="text-earth-green hover:text-earth-green/80 font-medium text-xs">
-                                            View Details
-                                        </button>
-                                    </td>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading orders...</td>
                                 </tr>
-                            ))}
+                            ) : orders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No orders found.</td>
+                                </tr>
+                            ) : (
+                                orders.map((order) => {
+                                    const statusConfig = getStatusConfig(order.status);
+                                    return (
+                                        <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-text-ink">#{order.id.slice(0, 8)}</td>
+                                            <td className="px-6 py-4 text-gray-600">{new Date(order.created_at).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4 text-gray-600">{order.crop} ({order.quantity} Q)</td>
+                                            <td className="px-6 py-4 text-gray-600">{order.farmerName}</td>
+                                            <td className="px-6 py-4 font-medium text-text-ink">₹{order.totalAmount.toLocaleString()}</td>
+                                            <td className="px-6 py-4">
+                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${statusConfig.color}`}>
+                                                    {statusConfig.icon}
+                                                    {statusConfig.label}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="text-earth-green hover:text-earth-green/80 font-medium text-xs">
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                         </tbody>
                     </table>
                 </div>

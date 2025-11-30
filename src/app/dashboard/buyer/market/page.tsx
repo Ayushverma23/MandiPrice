@@ -1,93 +1,63 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Search, Filter, MapPin, Tag } from "lucide-react";
 import Image from "next/image";
-
-// Mock Data for Marketplace
-const MOCK_LISTINGS = [
-    {
-        id: 1,
-        crop: "Fresh Red Onions",
-        variety: "Nashik Red",
-        quantity: "500 kg",
-        price: "₹1,200/qtl",
-        farmer: "Ram Kumar",
-        district: "Patna",
-        image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&q=80&w=500",
-        category: "Vegetables"
-    },
-    {
-        id: 2,
-        crop: "Organic Wheat",
-        variety: "Sharbati",
-        quantity: "2000 kg",
-        price: "₹2,400/qtl",
-        farmer: "Suresh Singh",
-        district: "Gaya",
-        image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=500",
-        category: "Grains"
-    },
-    {
-        id: 3,
-        crop: "Potatoes",
-        variety: "Jyoti",
-        quantity: "1000 kg",
-        price: "₹800/qtl",
-        farmer: "Amit Verma",
-        district: "Nalanda",
-        image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&q=80&w=500",
-        category: "Vegetables"
-    },
-    {
-        id: 4,
-        crop: "Basmati Rice",
-        variety: "1121 Steam",
-        quantity: "5000 kg",
-        price: "₹4,500/qtl",
-        farmer: "Kisan Agro",
-        district: "Buxar",
-        image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=500",
-        category: "Grains"
-    },
-    {
-        id: 5,
-        crop: "Tomatoes",
-        variety: "Hybrid Desi",
-        quantity: "200 kg",
-        price: "₹1,500/qtl",
-        farmer: "Rajesh Yadav",
-        district: "Patna",
-        image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=500",
-        category: "Vegetables"
-    },
-    {
-        id: 6,
-        crop: "Mustard Seeds",
-        variety: "Yellow",
-        quantity: "300 kg",
-        price: "₹5,200/qtl",
-        farmer: "Bihar Farms",
-        district: "Muzaffarpur",
-        image: "https://images.unsplash.com/photo-1508349356385-05d825c9609a?auto=format&fit=crop&q=80&w=500",
-        category: "Oilseeds"
-    }
-];
+import { getAllListings, Listing, initiateNegotiation } from "@/services/marketData";
+import NegotiationModal from "@/components/dashboard/NegotiationModal";
+import { useRouter } from "next/navigation";
 
 export default function MarketplacePage() {
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [selectedDistrict, setSelectedDistrict] = useState("All");
+    const [listings, setListings] = useState<(Listing & { farmerName: string, district: string, category: string })[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredListings = MOCK_LISTINGS.filter(item => {
+    // Negotiation State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedListing, setSelectedListing] = useState<(Listing & { farmerName: string }) | null>(null);
+
+    useEffect(() => {
+        const fetchListings = async () => {
+            try {
+                const data = await getAllListings();
+                setListings(data);
+            } catch (error) {
+                console.error("Failed to fetch listings", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchListings();
+    }, []);
+
+    const filteredListings = listings.filter(item => {
         const matchesSearch = item.crop.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.farmer.toLowerCase().includes(searchTerm.toLowerCase());
+            item.farmerName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
         const matchesDistrict = selectedDistrict === "All" || item.district === selectedDistrict;
 
         return matchesSearch && matchesCategory && matchesDistrict;
     });
+
+    const handleContactClick = (listing: Listing & { farmerName: string }) => {
+        setSelectedListing(listing);
+        setIsModalOpen(true);
+    };
+
+    const handleNegotiationSubmit = async (price: number, message: string) => {
+        if (!selectedListing) return;
+        try {
+            await initiateNegotiation(selectedListing.id, selectedListing.quantity, price, message);
+            setIsModalOpen(false);
+            router.push('/dashboard/buyer/orders'); // Redirect to orders to see the pending negotiation
+        } catch (error) {
+            console.error("Failed to submit negotiation", error);
+            alert("Failed to submit offer. Please try again.");
+        }
+    };
 
     return (
         <DashboardLayout>
@@ -140,57 +110,82 @@ export default function MarketplacePage() {
             </div>
 
             {/* Listings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredListings.map((item) => (
-                    <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-                        <div className="relative h-48 w-full bg-gray-100">
-                            <Image
-                                src={item.image}
-                                alt={item.crop}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-earth-green shadow-sm">
-                                {item.category}
-                            </div>
-                        </div>
-
-                        <div className="p-5">
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 className="font-bold text-lg text-text-ink">{item.crop}</h3>
-                                    <p className="text-sm text-gray-500">{item.variety}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-earth-green text-lg">{item.price}</p>
-                                    <p className="text-xs text-gray-400">approx.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                {item.district}, Bihar
-                            </div>
-
-                            <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                                        {item.farmer.charAt(0)}
+            {isLoading ? (
+                <div className="text-center py-12">Loading listings...</div>
+            ) : filteredListings.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">No listings found.</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredListings.map((item) => (
+                        <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+                            <div className="relative h-48 w-full bg-gray-100">
+                                {item.image ? (
+                                    <Image
+                                        src={item.image}
+                                        alt={item.crop}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                        No Image
                                     </div>
-                                    <div className="text-xs">
-                                        <p className="font-medium text-text-ink">{item.farmer}</p>
-                                        <p className="text-gray-400">Farmer</p>
+                                )}
+                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-earth-green shadow-sm">
+                                    {item.category}
+                                </div>
+                            </div>
+
+                            <div className="p-5">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-text-ink">{item.crop}</h3>
+                                        <p className="text-sm text-gray-500">{item.quantity} Quintals</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-earth-green text-lg">₹{item.price}/qtl</p>
+                                        <p className="text-xs text-gray-400">approx.</p>
                                     </div>
                                 </div>
 
-                                <button className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors">
-                                    Contact
-                                </button>
+                                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                    {item.district}, Bihar
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+                                            {item.farmerName.charAt(0)}
+                                        </div>
+                                        <div className="text-xs">
+                                            <p className="font-medium text-text-ink">{item.farmerName}</p>
+                                            <p className="text-gray-400">Farmer</p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleContactClick(item)}
+                                        className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors"
+                                    >
+                                        Contact / Negotiate
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
+
+            {selectedListing && (
+                <NegotiationModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    currentPrice={selectedListing.price}
+                    orderId={selectedListing.id} // Passing listing ID as orderId for now, but modal treats it as reference
+                    onSubmitOffer={handleNegotiationSubmit}
+                />
+            )}
         </DashboardLayout>
     );
 }
