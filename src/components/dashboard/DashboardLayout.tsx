@@ -1,13 +1,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp, Store, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp, Store, ShoppingBag, Heart, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { logout, user } = useAuth();
+    const { cartCount, wishlistCount } = useCart();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const isActive = (path: string) => pathname === path;
@@ -164,6 +166,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </Link>
 
                             <Link
+                                href="/dashboard/buyer/wishlist"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/wishlist')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="relative">
+                                    <Heart className="w-5 h-5" />
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                            {wishlistCount}
+                                        </span>
+                                    )}
+                                </div>
+                                Wishlist
+                            </Link>
+
+                            <Link
+                                href="/dashboard/buyer/cart"
+                                onClick={closeMobileMenu}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/cart')
+                                    ? 'bg-earth-green/10 text-earth-green'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="relative">
+                                    <ShoppingCart className="w-5 h-5" />
+                                    {cartCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-earth-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                </div>
+                                Cart
+                            </Link>
+
+                            <Link
                                 href="/dashboard/buyer/orders"
                                 onClick={closeMobileMenu}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard/buyer/orders')
@@ -205,6 +245,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <main className="flex-1 p-4 md:p-8 overflow-x-hidden md:ml-64">
                 {children}
             </main>
-        </div>
+        </div >
     );
 }

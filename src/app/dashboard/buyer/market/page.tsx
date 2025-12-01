@@ -1,14 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Search, Filter, MapPin, Tag } from "lucide-react";
+import { Search, Filter, MapPin, Tag, Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { getAllListings, Listing, initiateNegotiation } from "@/services/marketData";
+import { useCart } from "@/context/CartContext";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 import { useRouter } from "next/navigation";
 
 export default function MarketplacePage() {
     const router = useRouter();
+    const { addToCart, removeFromCart, addToWishlist, removeFromWishlist, isInCart, isInWishlist } = useCart();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [selectedDistrict, setSelectedDistrict] = useState("All");
@@ -164,12 +166,38 @@ export default function MarketplacePage() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => handleContactClick(item)}
-                                        className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors"
-                                    >
-                                        Contact / Negotiate
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item.id);
+                                            }}
+                                            className={`p-2 rounded-full transition-colors ${isInWishlist(item.id)
+                                                ? 'bg-red-50 text-red-500'
+                                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <Heart className={`w-4 h-4 ${isInWishlist(item.id) ? 'fill-current' : ''}`} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                isInCart(item.id) ? removeFromCart(item.id) : addToCart(item.id);
+                                            }}
+                                            className={`p-2 rounded-full transition-colors ${isInCart(item.id)
+                                                ? 'bg-earth-green/10 text-earth-green'
+                                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <ShoppingCart className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleContactClick(item)}
+                                            className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors"
+                                        >
+                                            Negotiate
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

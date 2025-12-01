@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { CartProvider } from "@/context/CartContext";
 import Footer from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -26,7 +27,9 @@ export default function RootLayout({
       <body className={`${inter.variable} ${playfair.variable} font-sans bg-paper-cream text-text-ink`}>
         <AuthProvider>
           <ToastProvider>
-            {children}
+            <CartProvider>
+              {children}
+            </CartProvider>
           </ToastProvider>
         </AuthProvider>
         <Footer />

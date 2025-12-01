@@ -74,6 +74,21 @@ export interface Listing {
     description?: string;
 }
 
+export interface WishlistItem {
+    id: string;
+    userId: string;
+    listingId: string;
+    listing: Listing & { farmerName: string; district: string; category: string };
+}
+
+export interface CartItem {
+    id: string;
+    userId: string;
+    listingId: string;
+    quantity: number;
+    listing: Listing & { farmerName: string; district: string; category: string };
+}
+
 const MOCK_LISTINGS: Listing[] = [
     { id: 'l1', farmerId: 'user_123', crop: 'Maize (Makka)', quantity: 50, price: 2200, status: 'active', datePosted: '2025-11-24', description: 'High quality maize' },
     { id: 'l2', farmerId: 'user_123', crop: 'Wheat', quantity: 100, price: 2400, status: 'pending', datePosted: '2025-11-25', description: 'Fresh wheat harvest' },
@@ -511,4 +526,221 @@ export const getPayments = async (farmerId: string): Promise<Payment[]> => {
     // Simulate async fetch; in a real app filter by farmerId via listing ownership
     await new Promise((resolve) => setTimeout(resolve, 500));
     return MOCK_PAYMENTS;
+};
+
+// Wishlist Services
+
+export const addToWishlist = async (listingId: string): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+        .from('wishlist')
+        .insert({ user_id: user.id, listing_id: listingId });
+
+    if (error) {
+        // Ignore duplicate key error (already in wishlist)
+        if (error.code === '23505') return;
+        throw error;
+    }
+};
+
+export const removeFromWishlist = async (listingId: string): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+        .from('wishlist')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('listing_id', listingId);
+
+    if (error) throw error;
+};
+
+export const getWishlist = async (): Promise<WishlistItem[]> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // 1. Get Wishlist Items
+    const { data: wishlistData, error: wishlistError } = await supabase
+        .from('wishlist')
+        .select('*')
+        .eq('user_id', user.id);
+
+    if (wishlistError) {
+        console.error('Error fetching wishlist:', wishlistError);
+        return [];
+    }
+
+    if (!wishlistData || wishlistData.length === 0) return [];
+
+    // 2. Get Listings
+    const listingIds = wishlistData.map((item: any) => item.listing_id);
+    const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('*')
+        .in('id', listingIds);
+
+    if (listingsError) {
+        console.error('Error fetching wishlist listings:', listingsError);
+        return [];
+    }
+
+    // 3. Get Profiles (Farmers)
+    const farmerIds = Array.from(new Set(listings?.map((l: any) => l.farmer_id) || []));
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, district')
+        .in('id', farmerIds);
+
+    const listingsMap = new Map(listings?.map((l: any) => [l.id, l]) || []);
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return wishlistData.map((item: any) => {
+        const listing = listingsMap.get(item.listing_id);
+        if (!listing) return null; // Should not happen if integrity is maintained
+
+        const profile = profilesMap.get(listing.farmer_id);
+
+        return {
+            id: item.id,
+            userId: item.user_id,
+            listingId: item.listing_id,
+            listing: {
+                id: listing.id,
+                farmerId: listing.farmer_id,
+                crop: listing.crop,
+                quantity: listing.quantity,
+                price: listing.price_per_quintal,
+                status: listing.status,
+                datePosted: new Date(listing.created_at).toISOString().split('T')[0],
+                image: listing.image_url,
+                description: listing.description,
+                farmerName: profile?.full_name || 'Unknown Farmer',
+                district: profile?.district || 'Unknown District',
+                category: 'Vegetables'
+            }
+        } as WishlistItem;
+    }).filter((item): item is WishlistItem => item !== null);
+};
+
+// Cart Services
+
+export const addToCart = async (listingId: string, quantity: number = 1): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+        .from('cart')
+        .insert({ user_id: user.id, listing_id: listingId, quantity });
+
+    if (error) {
+        if (error.code === '23505') {
+            // Already in cart, update quantity? For now just return
+            console.log("Item already in cart");
+            return;
+        }
+        throw error;
+    }
+};
+
+export const removeFromCart = async (listingId: string): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+        .from('cart')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('listing_id', listingId);
+
+    if (error) throw error;
+};
+
+export const getCart = async (): Promise<CartItem[]> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // 1. Get Cart Items
+    const { data: cartData, error: cartError } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id);
+
+    if (cartError) {
+        console.error('Error fetching cart:', cartError);
+        return [];
+    }
+
+    if (!cartData || cartData.length === 0) return [];
+
+    // 2. Get Listings
+    const listingIds = cartData.map((item: any) => item.listing_id);
+    const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('*')
+        .in('id', listingIds);
+
+    if (listingsError) {
+        console.error('Error fetching cart listings:', listingsError);
+        return [];
+    }
+
+    // 3. Get Profiles
+    const farmerIds = Array.from(new Set(listings?.map((l: any) => l.farmer_id) || []));
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, district')
+        .in('id', farmerIds);
+
+    const listingsMap = new Map(listings?.map((l: any) => [l.id, l]) || []);
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return cartData.map((item: any) => {
+        const listing = listingsMap.get(item.listing_id);
+        if (!listing) return null;
+
+        const profile = profilesMap.get(listing.farmer_id);
+
+        return {
+            id: item.id,
+            userId: item.user_id,
+            listingId: item.listing_id,
+            quantity: item.quantity,
+            listing: {
+                id: listing.id,
+                farmerId: listing.farmer_id,
+                crop: listing.crop,
+                quantity: listing.quantity,
+                price: listing.price_per_quintal,
+                status: listing.status,
+                datePosted: new Date(listing.created_at).toISOString().split('T')[0],
+                image: listing.image_url,
+                description: listing.description,
+                farmerName: profile?.full_name || 'Unknown Farmer',
+                district: profile?.district || 'Unknown District',
+                category: 'Vegetables'
+            }
+        } as CartItem;
+    }).filter((item): item is CartItem => item !== null);
+};
+
+export const clearCart = async (): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+        .from('cart')
+        .delete()
+        .eq('user_id', user.id);
+
+    if (error) throw error;
 };
