@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp, Store, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { logout, user } = useAuth();

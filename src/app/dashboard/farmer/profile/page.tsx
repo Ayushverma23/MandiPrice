@@ -6,8 +6,11 @@ import { useAuth } from "@/context/AuthContext";
 import { User, ShieldCheck, CreditCard, MapPin, Edit2, Save, X, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
+import { useToast } from "@/context/ToastContext";
+
 export default function ProfilePage() {
     const { user, refreshProfile } = useAuth();
+    const { success, error } = useToast();
 
     // Personal Details State
     const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -51,7 +54,7 @@ export default function ProfilePage() {
         setIsSavingPersonal(true);
 
         try {
-            const { error } = await supabase
+            const { error: updateError } = await supabase
                 .from('profiles')
                 .update({
                     full_name: personalData.name,
@@ -60,13 +63,14 @@ export default function ProfilePage() {
                 })
                 .eq('id', user.id);
 
-            if (error) throw error;
+            if (updateError) throw updateError;
 
             await refreshProfile();
             setIsEditingPersonal(false);
-        } catch (error) {
-            console.error("Error updating profile:", error);
-            alert("Failed to update profile. Please try again.");
+            success("Profile updated successfully");
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            error("Failed to update profile. Please try again.");
         } finally {
             setIsSavingPersonal(false);
         }
@@ -79,7 +83,7 @@ export default function ProfilePage() {
             setIsSubmittingBank(false);
             setIsEditingBank(false);
             setBankVerificationPending(true);
-            alert("Bank details change request sent for verification. Admin will review shortly.");
+            success("Bank details change request sent for verification. Admin will review shortly.");
         }, 1500);
     };
 

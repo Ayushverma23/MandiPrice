@@ -7,8 +7,11 @@ import { getOrders, Order, updateOrderStatus, submitNegotiation, getNegotiations
 import { Check, X, MessageCircle, Truck, Package, Loader2 } from "lucide-react";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
+import { useToast } from "@/context/ToastContext";
+
 export default function OrdersPage() {
     const { user } = useAuth();
+    const { success, error } = useToast();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'incoming' | 'active' | 'history'>('incoming');
@@ -21,8 +24,8 @@ export default function OrdersPage() {
             try {
                 const data = await getOrders(user.id);
                 setOrders(data);
-            } catch (error) {
-                console.error("Failed to fetch orders", error);
+            } catch (err) {
+                console.error("Failed to fetch orders", err);
             } finally {
                 setLoading(false);
             }
@@ -38,9 +41,10 @@ export default function OrdersPage() {
             await updateOrderStatus(orderId, status);
             // Refresh orders to get latest state
             fetchOrders();
-        } catch (error) {
-            console.error("Failed to update status", error);
-            alert("Failed to update status");
+            success(`Order ${status} successfully`);
+        } catch (err) {
+            console.error("Failed to update status", err);
+            error("Failed to update status");
         }
     };
 
@@ -54,8 +58,8 @@ export default function OrdersPage() {
                 senderName: h.senderId === user?.id ? 'Me' : h.senderName
             }));
             setNegotiationHistory(formattedHistory);
-        } catch (error) {
-            console.error("Failed to fetch negotiation history", error);
+        } catch (err) {
+            console.error("Failed to fetch negotiation history", err);
         }
     };
 
@@ -64,11 +68,11 @@ export default function OrdersPage() {
             try {
                 await submitNegotiation(negotiatingOrder.id, price, message);
                 setNegotiatingOrder(null);
-                alert("Counter offer sent!");
+                success("Counter offer sent!");
                 fetchOrders();
-            } catch (error) {
-                console.error("Failed to submit negotiation", error);
-                alert("Failed to submit negotiation");
+            } catch (err) {
+                console.error("Failed to submit negotiation", err);
+                error("Failed to submit negotiation");
             }
         }
     };

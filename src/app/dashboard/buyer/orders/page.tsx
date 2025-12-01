@@ -7,8 +7,11 @@ import { getBuyerOrders, Order, initiateNegotiation, submitNegotiation, getNegot
 import { useAuth } from "@/context/AuthContext";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
+import { useToast } from "@/context/ToastContext";
+
 export default function BuyerOrdersPage() {
     const { user } = useAuth();
+    const { success, error } = useToast();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [negotiatingOrder, setNegotiatingOrder] = useState<Order | null>(null);
@@ -19,8 +22,8 @@ export default function BuyerOrdersPage() {
         try {
             const data = await getBuyerOrders(user.id);
             setOrders(data);
-        } catch (error) {
-            console.error("Failed to fetch orders", error);
+        } catch (err) {
+            console.error("Failed to fetch orders", err);
         } finally {
             setIsLoading(false);
         }
@@ -40,8 +43,8 @@ export default function BuyerOrdersPage() {
                 senderName: h.senderId === user?.id ? 'Me' : h.senderName
             }));
             setNegotiationHistory(formattedHistory);
-        } catch (error) {
-            console.error("Failed to fetch negotiation history", error);
+        } catch (err) {
+            console.error("Failed to fetch negotiation history", err);
         }
     };
 
@@ -50,11 +53,11 @@ export default function BuyerOrdersPage() {
         try {
             await submitNegotiation(negotiatingOrder.id, price, message);
             setNegotiatingOrder(null);
-            alert("Counter offer sent!");
+            success("Counter offer sent!");
             fetchOrders(); // Refresh to see updated price/status
-        } catch (error) {
-            console.error("Failed to submit negotiation", error);
-            alert("Failed to submit offer. Please try again.");
+        } catch (err) {
+            console.error("Failed to submit negotiation", err);
+            error("Failed to submit offer. Please try again.");
         }
     };
 
