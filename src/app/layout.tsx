@@ -4,14 +4,14 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { CartProvider } from "@/context/CartContext";
-import Footer from "@/components/Footer";
+import FooterWrapper from "@/components/FooterWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Khet-Bazaar | Bihar's Digital Mandi",
-  description: "Connecting farmers directly to markets.",
+  title: "Khet-Bazaar",
+  description: "Direct Farmer-to-Mandi Marketplace",
   icons: {
     icon: '/leaf-logo.png',
   },
@@ -32,7 +32,7 @@ export default function RootLayout({
             </CartProvider>
           </ToastProvider>
         </AuthProvider>
-        <Footer />
+        <FooterWrapper />
       </body>
     </html>
   );
