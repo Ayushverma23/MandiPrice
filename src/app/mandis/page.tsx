@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
-import Header from "@/components/Header";
-import MandiCard from "@/components/MandiCard";
+import Header from "@/components/organisms/Header";
+import MandiCard from "@/components/molecules/MandiCard";
 import { getAllMandis, getDistricts, MarketUpdate } from "@/services/marketData";
 
 export default function MandisPage() {

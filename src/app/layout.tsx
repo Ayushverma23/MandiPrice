@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { CartProvider } from "@/context/CartContext";
-import FooterWrapper from "@/components/FooterWrapper";
+import FooterWrapper from "@/components/organisms/FooterWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });

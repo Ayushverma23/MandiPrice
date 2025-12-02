@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import Toast, { ToastType } from '@/components/ui/Toast';
+import Toast, { ToastType } from '@/components/molecules/Toast';
 
 interface ToastContextType {
     showToast: (message: string, type: ToastType) => void;

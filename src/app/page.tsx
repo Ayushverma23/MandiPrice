@@ -1,11 +1,11 @@
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import PriceTicker from "@/components/ui/PriceTicker";
-import MarketCard from "@/components/MarketCard";
-import Features from "@/components/Features";
-import HowItWorks from "@/components/HowItWorks";
-import MSPComparison from "@/components/MSPComparison";
-import GovernmentSchemes from "@/components/GovernmentSchemes";
+import Header from "@/components/organisms/Header";
+import Hero from "@/components/organisms/Hero";
+import PriceTicker from "@/components/molecules/PriceTicker";
+import MarketCard from "@/components/molecules/MarketCard";
+import Features from "@/components/organisms/Features";
+import HowItWorks from "@/components/organisms/HowItWorks";
+import MSPComparison from "@/components/organisms/MSPComparison";
+import GovernmentSchemes from "@/components/organisms/GovernmentSchemes";
 import { getLivePrices } from "@/services/marketData";
 
 export default async function Home() {
