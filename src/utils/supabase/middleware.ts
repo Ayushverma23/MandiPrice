@@ -51,5 +51,25 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
+    // Role-Based Access Control
+    if (user) {
+        const role = user.user_metadata.role;
+        const path = request.nextUrl.pathname;
+
+        if (path.startsWith('/dashboard/farmer')) {
+            if (role !== 'farmer' && role !== 'arthiya') {
+                const url = request.nextUrl.clone();
+                url.pathname = '/dashboard/buyer';
+                return NextResponse.redirect(url);
+            }
+        } else if (path.startsWith('/dashboard/buyer')) {
+            if (role !== 'buyer') {
+                const url = request.nextUrl.clone();
+                url.pathname = '/dashboard/farmer';
+                return NextResponse.redirect(url);
+            }
+        }
+    }
+
     return supabaseResponse
 }

@@ -346,6 +346,48 @@ export const getBuyerOrders = async (buyerId: string): Promise<Order[]> => {
 export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<void> => {
     const supabase = createClient();
 
+    if (status === 'accepted') {
+        // 1. Get Order Details
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .select('listing_id, quantity')
+            .eq('id', orderId)
+            .single();
+
+        if (orderError || !order) throw new Error('Order not found');
+
+        // 2. Get Listing Details
+        const { data: listing, error: listingError } = await supabase
+            .from('listings')
+            .select('quantity')
+            .eq('id', order.listing_id)
+            .single();
+
+        if (listingError || !listing) throw new Error('Listing not found');
+
+        // 3. Check Stock
+        if (listing.quantity < order.quantity) {
+            throw new Error('Insufficient stock to accept this order');
+        }
+
+        // 4. Deduct Stock & Update Status if needed
+        const newQuantity = listing.quantity - order.quantity;
+        // If quantity becomes 0, mark as sold. Otherwise keep as is (likely 'active')
+        // Note: We don't explicitly set to 'active' here to avoid overriding other statuses if any, 
+        // but usually it would be active.
+        const updateData: any = { quantity: newQuantity };
+        if (newQuantity === 0) {
+            updateData.status = 'sold';
+        }
+
+        const { error: updateListingError } = await supabase
+            .from('listings')
+            .update(updateData)
+            .eq('id', order.listing_id);
+
+        if (updateListingError) throw updateListingError;
+    }
+
     const { error } = await supabase
         .from('orders')
         .update({ status })
@@ -496,36 +538,74 @@ export const getNegotiations = async (orderId: string): Promise<Negotiation[]> =
 
 export interface Payment {
     id: string;
-    listingId: string;
+    orderId: string;
     amount: number;
-    status: 'pending' | 'credited' | 'processing';
+    status: 'pending' | 'verified' | 'rejected';
     date: string;
     buyerName: string;
+    transactionRef?: string;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-    {
-        id: 'p1',
-        listingId: 'l1',
-        amount: 110000,
-        status: 'credited',
-        date: '2025-11-20',
-        buyerName: 'Ravi Traders',
-    },
-    {
-        id: 'p2',
-        listingId: 'l2',
-        amount: 45000,
-        status: 'pending',
-        date: '2025-11-24',
-        buyerName: 'Bihar Agro Corp',
-    },
-];
+export const createPayment = async (orderId: string, amount: number, transactionRef: string): Promise<void> => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
 
-export const getPayments = async (farmerId: string): Promise<Payment[]> => {
-    // Simulate async fetch; in a real app filter by farmerId via listing ownership
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return MOCK_PAYMENTS;
+    // Get Order to find payee (seller)
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('seller_id')
+        .eq('id', orderId)
+        .single();
+
+    if (orderError || !order) throw new Error('Order not found');
+
+    const { error } = await supabase.from('payments').insert({
+        order_id: orderId,
+        payer_id: user.id,
+        payee_id: order.seller_id,
+        amount,
+        transaction_ref: transactionRef,
+        status: 'pending'
+    });
+
+    if (error) throw error;
+};
+
+export const getPayments = async (userId: string): Promise<Payment[]> => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .or(`payer_id.eq.${userId},payee_id.eq.${userId}`)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching payments:', error);
+        return [];
+    }
+
+    if (!data || data.length === 0) return [];
+
+    // Fetch profiles for names
+    const payerIds = Array.from(new Set(data.map((p: any) => p.payer_id)));
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', payerIds);
+
+    const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+
+    return data.map((item: any) => ({
+        id: item.id,
+        orderId: item.order_id,
+        amount: item.amount,
+        status: item.status,
+        date: new Date(item.created_at).toISOString().split('T')[0],
+        buyerName: profilesMap.get(item.payer_id)?.full_name || 'Unknown Buyer',
+        transactionRef: item.transaction_ref
+    }));
 };
 
 // Wishlist Services

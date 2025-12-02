@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Package, Clock, CheckCircle, Truck, XCircle, MessageCircle } from "lucide-react";
-import { getBuyerOrders, Order, initiateNegotiation, submitNegotiation, getNegotiations, Negotiation } from "@/services/marketData";
+import { Package, Clock, CheckCircle, Truck, XCircle, MessageCircle, CreditCard } from "lucide-react";
+import { getBuyerOrders, Order, initiateNegotiation, submitNegotiation, getNegotiations, Negotiation, createPayment } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import NegotiationModal from "@/components/dashboard/NegotiationModal";
 
@@ -16,6 +16,9 @@ export default function BuyerOrdersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [negotiatingOrder, setNegotiatingOrder] = useState<Order | null>(null);
     const [negotiationHistory, setNegotiationHistory] = useState<Negotiation[]>([]);
+
+    const [payingOrder, setPayingOrder] = useState<Order | null>(null);
+    const [transactionRef, setTransactionRef] = useState("");
 
     const fetchOrders = async () => {
         if (!user) return;
@@ -61,6 +64,21 @@ export default function BuyerOrdersPage() {
         }
     };
 
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!payingOrder) return;
+        try {
+            await createPayment(payingOrder.id, payingOrder.totalAmount, transactionRef);
+            success("Payment recorded! Waiting for farmer verification.");
+            setPayingOrder(null);
+            setTransactionRef("");
+            fetchOrders();
+        } catch (err) {
+            console.error("Failed to record payment", err);
+            error("Failed to record payment. Please try again.");
+        }
+    };
+
     const getStatusConfig = (status: Order['status']) => {
         switch (status) {
             case 'completed':
@@ -95,7 +113,7 @@ export default function BuyerOrdersPage() {
                                 <th className="px-6 py-4 font-medium text-gray-500">Date</th>
                                 <th className="px-6 py-4 font-medium text-gray-500">Items</th>
                                 <th className="px-6 py-4 font-medium text-gray-500">Farmer</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Amount</th>
+                                <th className="px-6 py-4 font-medium text-text-ink">Amount</th>
                                 <th className="px-6 py-4 font-medium text-gray-500">Status</th>
                                 <th className="px-6 py-4 font-medium text-gray-500">Action</th>
                             </tr>
@@ -126,18 +144,29 @@ export default function BuyerOrdersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                {order.status === 'pending' ? (
-                                                    <button
-                                                        onClick={() => handleNegotiateClick(order)}
-                                                        className="flex items-center gap-1 text-earth-green hover:text-earth-green/80 font-medium text-xs border border-earth-green/20 px-2 py-1 rounded hover:bg-earth-green/5"
-                                                    >
-                                                        <MessageCircle className="w-3 h-3" /> Negotiate
-                                                    </button>
-                                                ) : (
-                                                    <button className="text-gray-400 font-medium text-xs cursor-not-allowed">
-                                                        View Details
-                                                    </button>
-                                                )}
+                                                <div className="flex gap-2">
+                                                    {order.status === 'pending' && (
+                                                        <button
+                                                            onClick={() => handleNegotiateClick(order)}
+                                                            className="flex items-center gap-1 text-earth-green hover:text-earth-green/80 font-medium text-xs border border-earth-green/20 px-2 py-1 rounded hover:bg-earth-green/5"
+                                                        >
+                                                            <MessageCircle className="w-3 h-3" /> Negotiate
+                                                        </button>
+                                                    )}
+                                                    {order.status === 'accepted' && (
+                                                        <button
+                                                            onClick={() => setPayingOrder(order)}
+                                                            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-xs border border-blue-200 px-2 py-1 rounded hover:bg-blue-50"
+                                                        >
+                                                            <CreditCard className="w-3 h-3" /> Pay Now
+                                                        </button>
+                                                    )}
+                                                    {order.status !== 'pending' && order.status !== 'accepted' && (
+                                                        <button className="text-gray-400 font-medium text-xs cursor-not-allowed">
+                                                            View Details
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -157,6 +186,47 @@ export default function BuyerOrdersPage() {
                     onSubmitOffer={handleNegotiationSubmit}
                     history={negotiationHistory}
                 />
+            )}
+
+            {payingOrder && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold font-serif mb-4">Record Payment</h3>
+                        <p className="text-gray-600 mb-4 text-sm">
+                            Please transfer <strong>₹{payingOrder.totalAmount.toLocaleString()}</strong> to the farmer and enter the transaction reference ID below.
+                        </p>
+                        <form onSubmit={handlePaymentSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Transaction Reference ID / UTR
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={transactionRef}
+                                    onChange={(e) => setTransactionRef(e.target.value)}
+                                    placeholder="e.g., UPI1234567890"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
+                                />
+                            </div>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => setPayingOrder(null)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-earth-green text-white rounded-lg font-medium hover:bg-opacity-90"
+                                >
+                                    Submit Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </DashboardLayout>
     );
