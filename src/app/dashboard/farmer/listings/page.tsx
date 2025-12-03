@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { getMyListings, updateListingStatus, Listing } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import { Edit2, Trash2, CheckCircle } from "lucide-react";

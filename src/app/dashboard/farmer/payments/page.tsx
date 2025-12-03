@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { getPayments, Payment } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import { Download } from "lucide-react";

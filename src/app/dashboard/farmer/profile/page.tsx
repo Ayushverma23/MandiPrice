@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { User, ShieldCheck, CreditCard, MapPin, Edit2, Save, X, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";

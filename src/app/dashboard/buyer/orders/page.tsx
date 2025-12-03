@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { Package, Clock, CheckCircle, Truck, XCircle, MessageCircle, CreditCard } from "lucide-react";
 import { getBuyerOrders, Order, initiateNegotiation, submitNegotiation, getNegotiations, Negotiation, createPayment } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
-import NegotiationModal from "@/components/dashboard/NegotiationModal";
+import NegotiationModal from "@/components/organisms/NegotiationModal";
+import { ErrorBoundary } from "@/components/molecules/ErrorBoundary";
 
 import { useToast } from "@/context/ToastContext";
 
@@ -105,76 +106,78 @@ export default function BuyerOrdersPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-6 py-4 font-medium text-gray-500">Order ID</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Date</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Items</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Farmer</th>
-                                <th className="px-6 py-4 font-medium text-text-ink">Amount</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Status</th>
-                                <th className="px-6 py-4 font-medium text-gray-500">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {isLoading ? (
+                <ErrorBoundary>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading orders...</td>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Order ID</th>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Date</th>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Items</th>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Farmer</th>
+                                    <th className="px-6 py-4 font-medium text-text-ink">Amount</th>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Status</th>
+                                    <th className="px-6 py-4 font-medium text-gray-500">Action</th>
                                 </tr>
-                            ) : orders.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No orders found.</td>
-                                </tr>
-                            ) : (
-                                orders.map((order) => {
-                                    const statusConfig = getStatusConfig(order.status);
-                                    return (
-                                        <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-text-ink">#{order.id.slice(0, 8)}</td>
-                                            <td className="px-6 py-4 text-gray-600">{new Date(order.created_at).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-gray-600">{order.crop} ({order.quantity} Q)</td>
-                                            <td className="px-6 py-4 text-gray-600">{order.farmerName}</td>
-                                            <td className="px-6 py-4 font-medium text-text-ink">₹{order.totalAmount.toLocaleString()}</td>
-                                            <td className="px-6 py-4">
-                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${statusConfig.color}`}>
-                                                    {statusConfig.icon}
-                                                    {statusConfig.label}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex gap-2">
-                                                    {order.status === 'pending' && (
-                                                        <button
-                                                            onClick={() => handleNegotiateClick(order)}
-                                                            className="flex items-center gap-1 text-earth-green hover:text-earth-green/80 font-medium text-xs border border-earth-green/20 px-2 py-1 rounded hover:bg-earth-green/5"
-                                                        >
-                                                            <MessageCircle className="w-3 h-3" /> Negotiate
-                                                        </button>
-                                                    )}
-                                                    {order.status === 'accepted' && (
-                                                        <button
-                                                            onClick={() => setPayingOrder(order)}
-                                                            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-xs border border-blue-200 px-2 py-1 rounded hover:bg-blue-50"
-                                                        >
-                                                            <CreditCard className="w-3 h-3" /> Pay Now
-                                                        </button>
-                                                    )}
-                                                    {order.status !== 'pending' && order.status !== 'accepted' && (
-                                                        <button className="text-gray-400 font-medium text-xs cursor-not-allowed">
-                                                            View Details
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading orders...</td>
+                                    </tr>
+                                ) : orders.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No orders found.</td>
+                                    </tr>
+                                ) : (
+                                    orders.map((order) => {
+                                        const statusConfig = getStatusConfig(order.status);
+                                        return (
+                                            <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-text-ink">#{order.id.slice(0, 8)}</td>
+                                                <td className="px-6 py-4 text-gray-600">{new Date(order.created_at).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 text-gray-600">{order.crop} ({order.quantity} Q)</td>
+                                                <td className="px-6 py-4 text-gray-600">{order.farmerName}</td>
+                                                <td className="px-6 py-4 font-medium text-text-ink">₹{order.totalAmount.toLocaleString()}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${statusConfig.color}`}>
+                                                        {statusConfig.icon}
+                                                        {statusConfig.label}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex gap-2">
+                                                        {order.status === 'pending' && (
+                                                            <button
+                                                                onClick={() => handleNegotiateClick(order)}
+                                                                className="flex items-center gap-1 text-earth-green hover:text-earth-green/80 font-medium text-xs border border-earth-green/20 px-2 py-1 rounded hover:bg-earth-green/5"
+                                                            >
+                                                                <MessageCircle className="w-3 h-3" /> Negotiate
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'accepted' && (
+                                                            <button
+                                                                onClick={() => setPayingOrder(order)}
+                                                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-xs border border-blue-200 px-2 py-1 rounded hover:bg-blue-50"
+                                                            >
+                                                                <CreditCard className="w-3 h-3" /> Pay Now
+                                                            </button>
+                                                        )}
+                                                        {order.status !== 'pending' && order.status !== 'accepted' && (
+                                                            <button className="text-gray-400 font-medium text-xs cursor-not-allowed">
+                                                                View Details
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </ErrorBoundary>
             </div>
 
             {negotiatingOrder && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Trash2, MapPin, ArrowRight, CheckCircle } from "lucide-react";
 import Image from "next/image";

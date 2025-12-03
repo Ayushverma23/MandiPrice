@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Store, ShoppingBag, TrendingUp, ArrowRight } from "lucide-react";
 import Link from "next/link";

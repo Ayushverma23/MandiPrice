@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import PriceComparison from "@/components/dashboard/PriceComparison";
+import DashboardLayout from "@/components/templates/DashboardLayout";
+import PriceComparison from "@/components/organisms/PriceComparison";
+import { ErrorBoundary } from "@/components/molecules/ErrorBoundary";
 import { getMyListings, Listing } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import { TrendingUp, ShoppingCart, AlertCircle } from "lucide-react";
@@ -120,7 +121,9 @@ export default function FarmerDashboard() {
 
                 {/* Price Comparison Widget */}
                 <div className="lg:col-span-1">
-                    <PriceComparison />
+                    <ErrorBoundary>
+                        <PriceComparison />
+                    </ErrorBoundary>
                 </div>
             </div>
         </DashboardLayout>

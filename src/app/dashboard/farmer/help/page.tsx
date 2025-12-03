@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import FarmerGuide from "@/components/dashboard/FarmerGuide";
+import DashboardLayout from "@/components/templates/DashboardLayout";
+import FarmerGuide from "@/components/organisms/FarmerGuide";
 import { Send, AlertCircle } from "lucide-react";
 
 export default function HelpPage() {

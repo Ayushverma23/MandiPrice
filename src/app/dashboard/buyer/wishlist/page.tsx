@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingCart, Trash2, MapPin } from "lucide-react";
 import Image from "next/image";
@@ -76,8 +76,8 @@ export default function WishlistPage() {
                                         onClick={() => addToCart(item.listingId)}
                                         disabled={isInCart(item.listingId)}
                                         className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInCart(item.listingId)
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-earth-green text-white hover:bg-earth-green/90'
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-earth-green text-white hover:bg-earth-green/90'
                                             }`}
                                     >
                                         <ShoppingCart className="w-4 h-4" />

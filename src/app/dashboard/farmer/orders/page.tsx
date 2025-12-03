@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getOrders, Order, updateOrderStatus, submitNegotiation, getNegotiations, Negotiation } from "@/services/marketData";
 import { Check, X, MessageCircle, Truck, Package, Loader2 } from "lucide-react";
-import NegotiationModal from "@/components/dashboard/NegotiationModal";
+import NegotiationModal from "@/components/organisms/NegotiationModal";
 
 import { useToast } from "@/context/ToastContext";
 

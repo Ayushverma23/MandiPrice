@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardLayout from "@/components/templates/DashboardLayout";
 import { Search, Filter, MapPin, Tag, Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { getAllListings, Listing, initiateNegotiation } from "@/services/marketData";
 import { useCart } from "@/context/CartContext";
-import NegotiationModal from "@/components/dashboard/NegotiationModal";
+import NegotiationModal from "@/components/organisms/NegotiationModal";
 import { useRouter } from "next/navigation";
+import { ErrorBoundary } from "@/components/molecules/ErrorBoundary";
 
 export default function MarketplacePage() {
     const router = useRouter();
@@ -112,98 +113,100 @@ export default function MarketplacePage() {
             </div>
 
             {/* Listings Grid */}
-            {isLoading ? (
-                <div className="text-center py-12">Loading listings...</div>
-            ) : filteredListings.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">No listings found.</div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredListings.map((item) => (
-                        <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-                            <div className="relative h-48 w-full bg-gray-100">
-                                {item.image ? (
-                                    <Image
-                                        src={item.image}
-                                        alt={item.crop}
-                                        fill
-                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        No Image
-                                    </div>
-                                )}
-                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-earth-green shadow-sm">
-                                    {item.category}
-                                </div>
-                            </div>
-
-                            <div className="p-5">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 className="font-bold text-lg text-text-ink">{item.crop}</h3>
-                                        <p className="text-sm text-gray-500">{item.quantity} Quintals</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-earth-green text-lg">₹{item.price}/qtl</p>
-                                        <p className="text-xs text-gray-400">approx.</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                    {item.district}, Bihar
-                                </div>
-
-                                <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                                            {item.farmerName.charAt(0)}
+            <ErrorBoundary>
+                {isLoading ? (
+                    <div className="text-center py-12">Loading listings...</div>
+                ) : filteredListings.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">No listings found.</div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredListings.map((item) => (
+                            <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+                                <div className="relative h-48 w-full bg-gray-100">
+                                    {item.image ? (
+                                        <Image
+                                            src={item.image}
+                                            alt={item.crop}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                            No Image
                                         </div>
-                                        <div className="text-xs">
-                                            <p className="font-medium text-text-ink">{item.farmerName}</p>
-                                            <p className="text-gray-400">Farmer</p>
+                                    )}
+                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-earth-green shadow-sm">
+                                        {item.category}
+                                    </div>
+                                </div>
+
+                                <div className="p-5">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 className="font-bold text-lg text-text-ink">{item.crop}</h3>
+                                            <p className="text-sm text-gray-500">{item.quantity} Quintals</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-earth-green text-lg">₹{item.price}/qtl</p>
+                                            <p className="text-xs text-gray-400">approx.</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item.id);
-                                            }}
-                                            className={`p-2 rounded-full transition-colors ${isInWishlist(item.id)
-                                                ? 'bg-red-50 text-red-500'
-                                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                                                }`}
-                                        >
-                                            <Heart className={`w-4 h-4 ${isInWishlist(item.id) ? 'fill-current' : ''}`} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                isInCart(item.id) ? removeFromCart(item.id) : addToCart(item.id);
-                                            }}
-                                            className={`p-2 rounded-full transition-colors ${isInCart(item.id)
-                                                ? 'bg-earth-green/10 text-earth-green'
-                                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                                                }`}
-                                        >
-                                            <ShoppingCart className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleContactClick(item)}
-                                            className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors"
-                                        >
-                                            Negotiate
-                                        </button>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                        <MapPin className="w-4 h-4 text-gray-400" />
+                                        {item.district}, Bihar
+                                    </div>
+
+                                    <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+                                                {item.farmerName.charAt(0)}
+                                            </div>
+                                            <div className="text-xs">
+                                                <p className="font-medium text-text-ink">{item.farmerName}</p>
+                                                <p className="text-gray-400">Farmer</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item.id);
+                                                }}
+                                                className={`p-2 rounded-full transition-colors ${isInWishlist(item.id)
+                                                    ? 'bg-red-50 text-red-500'
+                                                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                <Heart className={`w-4 h-4 ${isInWishlist(item.id) ? 'fill-current' : ''}`} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    isInCart(item.id) ? removeFromCart(item.id) : addToCart(item.id);
+                                                }}
+                                                className={`p-2 rounded-full transition-colors ${isInCart(item.id)
+                                                    ? 'bg-earth-green/10 text-earth-green'
+                                                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                <ShoppingCart className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleContactClick(item)}
+                                                className="px-4 py-2 bg-earth-green text-white text-sm font-medium rounded-lg hover:bg-earth-green/90 transition-colors"
+                                            >
+                                                Negotiate
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </ErrorBoundary>
 
             {selectedListing && (
                 <NegotiationModal
