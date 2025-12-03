@@ -53,8 +53,25 @@ export async function updateSession(request: NextRequest) {
 
     // Role-Based Access Control
     if (user) {
-        const role = user.user_metadata.role;
+        // Attempt to read role from user metadata; fallback to profiles table if missing
+        let role: string | undefined = (user.user_metadata && (user.user_metadata as any).role) as string | undefined;
         const path = request.nextUrl.pathname;
+
+        if (!role) {
+            // Fetch role from profiles table based on user.id
+            try {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                if (!error && profile) {
+                    role = profile.role;
+                }
+            } catch (e) {
+                console.error('Failed to fetch role from profiles:', e);
+            }
+        }
 
         if (path.startsWith('/dashboard/farmer')) {
             if (role !== 'farmer' && role !== 'arthiya') {
