@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { createNotification } from "./notificationService";
 
 export interface MarketUpdate {
     id: string;
@@ -397,6 +398,30 @@ export const updateOrderStatus = async (orderId: string, status: Order['status']
         console.error('Error updating order status:', error);
         throw error;
     }
+
+    // Notify the other party
+    // If status is accepted/rejected/completed, notify buyer
+    if (['accepted', 'rejected', 'in_transit', 'completed', 'cancelled'].includes(status)) {
+        // We need to fetch the order again to get buyer_id if we don't have it (we only fetched it in the 'accepted' block)
+        const { data: orderDetails } = await supabase
+            .from('orders')
+            .select('buyer_id, listing_id')
+            .eq('id', orderId)
+            .single();
+
+        if (orderDetails) {
+            const { data: listing } = await supabase.from('listings').select('crop').eq('id', orderDetails.listing_id).single();
+            const cropName = listing?.crop || 'Order';
+
+            await createNotification(
+                orderDetails.buyer_id,
+                `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+                `Your order for ${cropName} has been ${status}.`,
+                'order',
+                `/dashboard/buyer/orders`
+            );
+        }
+    }
 };
 
 export const submitNegotiation = async (orderId: string, newPrice: number, message: string): Promise<void> => {
@@ -440,6 +465,18 @@ export const submitNegotiation = async (orderId: string, newPrice: number, messa
         .eq('id', orderId);
 
     if (updateError) throw updateError;
+
+    // Notify the other party (if sender is buyer, notify seller, and vice versa)
+    const receiverId = user.id === order.buyer_id ? order.seller_id : order.buyer_id;
+    const link = user.id === order.buyer_id ? `/dashboard/farmer/orders` : `/dashboard/buyer/orders`;
+
+    await createNotification(
+        receiverId,
+        'New Negotiation Offer',
+        `You have received a new offer of ₹${newPrice}/quintal.`,
+        'negotiation',
+        link
+    );
 };
 
 export const initiateNegotiation = async (listingId: string, quantity: number, offerPrice: number, message: string): Promise<void> => {
@@ -486,6 +523,15 @@ export const initiateNegotiation = async (listingId: string, quantity: number, o
         });
 
     if (negotiationError) throw negotiationError;
+
+    // Notify Farmer
+    await createNotification(
+        listing.farmer_id,
+        'New Order Request',
+        `You have a new order request for your listing. Offer: ₹${offerPrice}/quintal.`,
+        'order',
+        '/dashboard/farmer/orders'
+    );
 };
 
 export interface Negotiation {

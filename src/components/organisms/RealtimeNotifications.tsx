@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 
 export default function RealtimeNotifications() {
     const { user } = useAuth();
-    const { success } = useToast();
+    const { success, info } = useToast();
     const supabase = createClient();
 
     useEffect(() => {
@@ -18,33 +18,20 @@ export default function RealtimeNotifications() {
             .on(
                 'postgres_changes',
                 {
-                    event: '*',
+                    event: 'INSERT',
                     schema: 'public',
-                    table: 'orders',
-                    filter: `seller_id=eq.${user.id}`,
-                },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        success('New order received!');
-                    } else if (payload.eventType === 'UPDATE') {
-                        // @ts-ignore
-                        const newStatus = payload.new.status;
-                        success(`Order status updated to ${newStatus}`);
-                    }
-                }
-            )
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'orders',
-                    filter: `buyer_id=eq.${user.id}`,
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
                     // @ts-ignore
-                    const newStatus = payload.new.status;
-                    success(`Order status updated to ${newStatus}`);
+                    const newNotification = payload.new;
+                    // Play a sound or show a specific toast based on type
+                    if (newNotification.type === 'order') {
+                        success(newNotification.title);
+                    } else {
+                        info(newNotification.title);
+                    }
                 }
             )
             .subscribe();
@@ -52,7 +39,7 @@ export default function RealtimeNotifications() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user, supabase, success]);
+    }, [user, supabase, success, info]);
 
     return null;
 }

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, PlusCircle, List, Settings, LogOut, Menu, X, CircleHelp, Store, ShoppingBag, Heart, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import RealtimeNotifications from "./RealtimeNotifications";
+import RealtimeNotifications from "@/components/organisms/RealtimeNotifications";
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

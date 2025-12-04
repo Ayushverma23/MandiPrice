@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/templates/DashboardLayout";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { createListing } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/utils/supabase/client";
@@ -32,6 +32,8 @@ export default function SellRequestPage() {
     const uploadImage = async (file: File): Promise<string | null> => {
         try {
             const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('Supabase session (should be non‑null):', session);
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
             const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "public";

@@ -1,0 +1,28 @@
+-- Create Notifications Table
+create table if not exists notifications (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  title text not null,
+  message text not null,
+  type text check (type in ('order', 'payment', 'system', 'negotiation')) not null,
+  read boolean default false,
+  link text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table notifications enable row level security;
+
+-- Policies
+create policy "Users can view their own notifications"
+  on notifications for select
+  using (auth.uid() = user_id);
+
+create policy "Users can update their own notifications (mark as read)"
+  on notifications for update
+  using (auth.uid() = user_id);
+
+-- Allow system/server functions to insert (or authenticated users if triggering from client)
+create policy "Users can insert notifications"
+  on notifications for insert
+  with check (auth.role() = 'authenticated');
