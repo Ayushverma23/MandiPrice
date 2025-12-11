@@ -108,6 +108,8 @@ export default function SignupPage() {
                                     name="name"
                                     type="text"
                                     required
+                                    placeholder="e.g. Rahul Kumar (min 5 chars)"
+                                    minLength={5}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
                                 />
                             </div>
@@ -119,6 +121,10 @@ export default function SignupPage() {
                                     name="phone"
                                     type="tel"
                                     required
+                                    placeholder="10 digit mobile number"
+                                    pattern="[0-9]{10}"
+                                    maxLength={10}
+                                    title="Please enter a valid 10-digit phone number"
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-earth-green/20 focus:border-earth-green"
                                 />
                             </div>
