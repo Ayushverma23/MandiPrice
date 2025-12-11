@@ -18,7 +18,7 @@ export default function WishlistPage() {
         <DashboardLayout>
             <div className="mb-8">
                 <h1 className="text-2xl font-serif font-bold text-text-ink">My Wishlist</h1>
-                <p className="text-gray-500">Items you've saved for later.</p>
+                <p className="text-gray-500">Items you&apos;re interested in for later.</p>
             </div>
 
             {wishlistItems.length === 0 ? (
@@ -94,7 +94,8 @@ export default function WishlistPage() {
                         </div>
                     ))}
                 </div>
-            )}
-        </DashboardLayout>
+            )
+            }
+        </DashboardLayout >
     );
 }

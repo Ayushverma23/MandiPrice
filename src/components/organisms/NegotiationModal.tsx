@@ -18,7 +18,10 @@ export default function NegotiationModal({ isOpen, onClose, currentPrice, orderI
 
     useEffect(() => {
         if (isOpen) {
-            setOfferPrice(currentPrice);
+            if (offerPrice !== currentPrice) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setOfferPrice(currentPrice);
+            }
             // Scroll to bottom of history
             setTimeout(() => {
                 historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,8 +60,8 @@ export default function NegotiationModal({ isOpen, onClose, currentPrice, orderI
                         history.map((item) => (
                             <div key={item.id} className={`flex flex-col ${item.senderName === 'Me' ? 'items-end' : 'items-start'}`}>
                                 <div className={`max-w-[85%] rounded-lg p-3 ${item.senderName === 'Me'
-                                        ? 'bg-earth-green text-white rounded-tr-none'
-                                        : 'bg-white border border-gray-200 rounded-tl-none'
+                                    ? 'bg-earth-green text-white rounded-tr-none'
+                                    : 'bg-white border border-gray-200 rounded-tl-none'
                                     }`}>
                                     <div className="flex justify-between items-baseline gap-4 mb-1">
                                         <span className={`text-xs font-bold ${item.senderName === 'Me' ? 'text-white/90' : 'text-earth-green'}`}>

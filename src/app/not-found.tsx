@@ -17,7 +17,7 @@ export default function NotFound() {
                     Page Not Found
                 </h2>
                 <p className="text-gray-500 mb-8">
-                    The page you are looking for doesn't exist or has been moved.
+                    The page you are looking for doesn&apos;t exist or has been moved.
                 </p>
                 <div className="flex items-center justify-center gap-4">
                     <button
@@ -34,7 +34,7 @@ export default function NotFound() {
                         Return Home
                     </Link>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

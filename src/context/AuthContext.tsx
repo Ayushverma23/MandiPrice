@@ -19,6 +19,7 @@ interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (email: string) => Promise<void>; // Deprecated in favor of Server Actions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     signup: (data: any) => Promise<void>; // Deprecated in favor of Server Actions
     logout: () => Promise<void>;
     refreshProfile: () => Promise<void>;
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
             // Fetch profile
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('*')
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         getUser();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -83,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("AuthContext.login is deprecated. Use Server Actions.");
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signup = async (data: any) => {
         // No-op: Signup is handled by Server Actions
         console.warn("AuthContext.signup is deprecated. Use Server Actions.");

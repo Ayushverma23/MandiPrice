@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-1">Something went wrong</h3>
                     <p className="text-sm text-gray-600 mb-4 max-w-xs">
-                        We couldn't load this section. Please try again later.
+                        We couldn&apos;t load this section. Please try again later.
                     </p>
                     <button
                         onClick={() => this.setState({ hasError: false })}

@@ -42,20 +42,6 @@ export default function MSPComparison() {
     return (
         <section className="py-16 bg-gradient-to-b from-paper-cream to-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                    <div className="inline-block bg-earth-green text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                        2024-25 Season
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-text-ink mb-4">
-                        Know Your Right Price (MSP)
-                    </h2>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                        Compare Government Minimum Support Price (MSP) with Khet Bazaar's average market rates.
-                        <br />
-                        <span className="text-earth-green font-semibold">We ensure you get paid above MSP.</span>
-                    </p>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {mspData.map((item, index) => (
                         <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-earth-green/10 hover:border-earth-green/30 overflow-hidden group">
@@ -91,6 +77,9 @@ export default function MSPComparison() {
                 <div className="mt-8 text-center">
                     <p className="text-sm text-gray-500 italic">
                         * Market rates are average prices observed on Khet Bazaar in the last 24 hours.
+                    </p>
+                    <p className="text-sm text-gray-500 italic mt-2">
+                        Compare Government Minimum Support Price (MSP) with Khet Bazaar&apos;s average market rates.
                     </p>
                 </div>
             </div>

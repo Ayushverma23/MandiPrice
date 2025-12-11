@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/templates/DashboardLayout";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getNotifications, markAsRead, markAllAsRead, Notification } from "@/services/notificationService";
-import { Bell, Check, CheckCheck, ExternalLink, Package, CreditCard, MessageSquare, Info } from "lucide-react";
-import Link from "next/link";
 import { useToast } from "@/context/ToastContext";
+import DashboardLayout from "@/components/templates/DashboardLayout";
+import { getNotifications, markAsRead, markAllAsRead, Notification } from "@/services/notificationService";
+import { Bell, Package, CreditCard, MessageSquare, Info, CheckCheck, Check, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 export default function NotificationsPage() {
     const { user } = useAuth();
@@ -14,18 +14,19 @@ export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user) {
-            fetchNotifications();
-        }
-    }, [user]);
-
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         if (!user) return;
         const data = await getNotifications(user.id);
         setNotifications(data);
         setLoading(false);
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            fetchNotifications();
+        }
+    }, [user, fetchNotifications]);
 
     const handleMarkAsRead = async (id: string) => {
         await markAsRead(id);
@@ -78,7 +79,7 @@ export default function NotificationsPage() {
                         <Bell className="w-8 h-8" />
                     </div>
                     <h3 className="text-lg font-medium text-text-ink">No notifications yet</h3>
-                    <p className="text-gray-500">We'll notify you when something important happens.</p>
+                    <p className="text-gray-500">We&apos;ll notify you when something important happens.</p>
                 </div>
             ) : (
                 <div className="space-y-4">

@@ -24,7 +24,6 @@ export default function RealtimeNotifications() {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
-                    // @ts-ignore
                     const newNotification = payload.new;
                     // Play a sound or show a specific toast based on type
                     if (newNotification.type === 'order') {

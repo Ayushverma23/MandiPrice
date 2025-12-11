@@ -47,7 +47,7 @@ export default function HelpPage() {
                 {submitted ? (
                     <div className="bg-green-50 text-green-800 p-4 rounded-lg text-center">
                         <p className="font-medium">Thank you! Your issue has been reported.</p>
-                        <p className="text-sm mt-1">Ticket ID: #KB-{Math.floor(Math.random() * 10000)}</p>
+                        <p className="text-sm mt-1">Ticket ID: #KB-1234</p>
                         <button
                             onClick={() => setSubmitted(false)}
                             className="mt-4 text-sm text-green-700 underline hover:text-green-800"

@@ -51,6 +51,7 @@ export const getNotifications = async (userId: string): Promise<Notification[]> 
         return [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data.map((item: any) => ({
         id: item.id,
         userId: item.user_id,

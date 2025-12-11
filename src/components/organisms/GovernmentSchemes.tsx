@@ -42,7 +42,7 @@ export default function GovernmentSchemes() {
                         </h2>
                         <p className="text-gray-600">
                             Stay updated with the latest government initiatives designed to support farmers.
-                            Don't miss out on your benefits.
+                            Don&apos;t miss out on your benefits.
                         </p>
                     </div>
                     <a
