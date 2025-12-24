@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/templates/DashboardLayout";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { createListing } from "@/services/marketData";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/utils/supabase/client";
